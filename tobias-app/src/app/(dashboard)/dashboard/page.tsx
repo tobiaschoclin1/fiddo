@@ -31,18 +31,6 @@ interface UserProfile {
       permalink: string;
     };
   };
-  tiendanube: {
-    connected: boolean;
-    storeId?: string;
-    userId?: string;
-    scope?: string;
-    tokenType?: string;
-    profile?: {
-      name?: string;
-      domain?: string;
-      email?: string;
-    } | null;
-  };
 }
 interface Customer {
   id: string;
@@ -56,24 +44,6 @@ interface Customer {
   province?: string | null;
 }
 interface MLProduct {
-  id: string;
-  title: string;
-  price: number;
-  thumbnail: string;
-  available_quantity: number;
-}
-
-interface TNCustomer {
-  id: string;
-  nickname: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  email?: string | null;
-  province?: string | null;
-  purchaseCount: number;
-}
-
-interface TNProduct {
   id: string;
   title: string;
   price: number;
@@ -104,26 +74,9 @@ export default function DashboardPage() {
   const [bulkModal, setBulkModal] = useState<{ open: boolean; text: string }>({ open: false, text: "" });
   const [promotionModal, setPromotionModal] = useState<{ open: boolean; productId?: string; discount: string; days: string }>({ open: false, discount: "", days: "" });
   const [disconnectModal, setDisconnectModal] = useState(false);
-  const TN_PRODUCTS_PER_PAGE = 10;
-  const tnProductsPage = 1;
-  const TN_CUSTOMERS_PER_PAGE = 20;
-  const [tnCustomersPage, setTnCustomersPage] = useState(1);
-  const [tnCustomers, setTnCustomers] = useState<TNCustomer[]>([]);
-  const [tnCustomersLoading, setTnCustomersLoading] = useState(true);
-  const [tnPurchaseFilter, setTnPurchaseFilter] = useState("");
-  const [tnProvinceFilter, setTnProvinceFilter] = useState("");
-  const [tnAvailableProvinces, setTnAvailableProvinces] = useState<string[]>([]);
-  const [tnProducts, setTnProducts] = useState<TNProduct[]>([]);
-  const [tnProductsLoading, setTnProductsLoading] = useState(true);
-  const [tnDisconnectModal, setTnDisconnectModal] = useState(false);
   // MercadoLibre
   const mlAppId = process.env.NEXT_PUBLIC_MERCADOLIBRE_APP_ID;
   const mlRedirectUri = process.env.NEXT_PUBLIC_MERCADOLIBRE_REDIRECT_URI;
-  // Tienda Nube
-  const tnAppId = process.env.NEXT_PUBLIC_TIENDANUBE_APP_ID;
-  const tnClientId = process.env.NEXT_PUBLIC_TIENDANUBE_CLIENT_ID || tnAppId;
-  const tnRedirectUri = process.env.NEXT_PUBLIC_TIENDANUBE_REDIRECT_URI;
-  const tnScopes = process.env.NEXT_PUBLIC_TIENDANUBE_SCOPES || "read_customers read_products";
 
   const filteredCustomers = useMemo(() => {
     return customers.filter((c) => {
@@ -136,18 +89,6 @@ export default function DashboardPage() {
       return match;
     });
   }, [customers, purchaseFilter, provinceFilter]);
-
-  const tnFilteredCustomers = useMemo(() => {
-    return tnCustomers.filter((c) => {
-      let match = true;
-      if (tnPurchaseFilter === "1") match = match && c.purchaseCount === 1;
-      else if (tnPurchaseFilter === "1-5") match = match && c.purchaseCount > 1 && c.purchaseCount <= 5;
-      else if (tnPurchaseFilter === "5-10") match = match && c.purchaseCount > 5 && c.purchaseCount <= 10;
-      else if (tnPurchaseFilter === "10+") match = match && c.purchaseCount > 10;
-      if (tnProvinceFilter) match = match && c.province === tnProvinceFilter;
-      return match;
-    });
-  }, [tnCustomers, tnPurchaseFilter, tnProvinceFilter]);
 
   // 1. Cargar perfil de usuario solo al montar
   useEffect(() => {
@@ -169,8 +110,6 @@ export default function DashboardPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const error = urlParams.get("error");
     const success = urlParams.get("success");
-    const tnError = urlParams.get("tiendanube_error");
-    const tnSuccess = urlParams.get("tiendanube_success");
     if (error === "MLAccountAlreadyLinked") {
       notify("⚠️ Esta cuenta de MercadoLibre ya está conectada a otro usuario. Por favor, usa una cuenta diferente.");
     } else if (error === "TokenError") {
@@ -179,13 +118,7 @@ export default function DashboardPage() {
       notify("✅ ¡Conexión con MercadoLibre exitosa!");
       fetchUserProfile();
     }
-    if (tnError) {
-      notify("❌ Error al conectar con Tienda Nube. Por favor, revisa la configuración e inténtalo nuevamente.");
-    } else if (tnSuccess === "true") {
-      notify("✅ ¡Conexión con Tienda Nube exitosa!");
-      fetchUserProfile();
-    }
-    if (error || success || tnError || tnSuccess) {
+    if (error || success) {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [notify]);
@@ -234,49 +167,6 @@ export default function DashboardPage() {
       fetchProducts();
     }
   }, [userProfile, productsPage]);
-
-  useEffect(() => {
-    if (!userProfile?.tiendanube.connected) return;
-    const fetchCustomers = async () => {
-      setTnCustomersLoading(true);
-      try {
-        const offset = (tnCustomersPage - 1) * TN_CUSTOMERS_PER_PAGE;
-        const response = await fetch(`/api/tiendanube/customers?limit=${TN_CUSTOMERS_PER_PAGE}&offset=${offset}`);
-        if (response.ok) {
-          const data = await response.json();
-          setTnCustomers(data.items);
-          const provs = Array.from(new Set(data.items.map((c: TNCustomer) => c.province).filter((p: string | null): p is string => Boolean(p)))).sort();
-          setTnAvailableProvinces(provs as string[]);
-        } else {
-          console.error("Error cargando clientes de Tienda Nube");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setTnCustomersLoading(false);
-      }
-    };
-    fetchCustomers();
-  }, [userProfile, tnCustomersPage]);
-
-  useEffect(() => {
-    if (!userProfile?.tiendanube.connected) return;
-    const fetchProducts = async () => {
-      setTnProductsLoading(true);
-      try {
-        const offset = (tnProductsPage - 1) * TN_PRODUCTS_PER_PAGE;
-        const response = await fetch(`/api/tiendanube/products?limit=${TN_PRODUCTS_PER_PAGE}&offset=${offset}`);
-        if (!response.ok) throw new Error("Error al obtener productos de Tienda Nube");
-        const data = await response.json();
-        setTnProducts(data.items);
-      } catch (error) {
-        console.error("Error al obtener productos de Tienda Nube:", error);
-      } finally {
-        setTnProductsLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [userProfile, tnProductsPage]);
 
   // Handlers para los modales y acciones
   const handleSendMessage = async () => {
@@ -387,27 +277,6 @@ export default function DashboardPage() {
       setDisconnectModal(false);
     }
   };
-  const handleTiendaNubeDisconnect = () => setTnDisconnectModal(true);
-  const confirmTiendaNubeDisconnect = async () => {
-    try {
-      const response = await fetch("/api/auth/tiendanube/disconnect", { method: "POST" });
-      if (response.ok) {
-        notify("Cuenta de Tienda Nube desconectada exitosamente");
-        const profileResponse = await fetch("/api/user/profile");
-        if (profileResponse.ok) {
-          const data = await profileResponse.json();
-          setUserProfile(data);
-        }
-      } else {
-        notify("Error al desconectar la cuenta de Tienda Nube");
-      }
-    } catch (error) {
-      console.error("Error al desconectar Tienda Nube:", error);
-      notify("Error al desconectar la cuenta de Tienda Nube");
-    } finally {
-      setTnDisconnectModal(false);
-    }
-  };
   function handleMercadoLibreConnect() {
     const codeVerifier = base64URLEncode(Buffer.from(window.crypto.getRandomValues(new Uint8Array(32))));
     generateCodeChallenge(codeVerifier).then((codeChallenge) => {
@@ -423,23 +292,6 @@ export default function DashboardPage() {
       window.location.href = authUrl;
     });
   }
-  const handleTiendaNubeConnect = () => {
-    if (!tnAppId || !tnClientId || !tnRedirectUri) {
-      notify("Configura las credenciales de Tienda Nube antes de continuar.");
-      return;
-    }
-    const state = base64URLEncode(Buffer.from(window.crypto.getRandomValues(new Uint8Array(16))));
-    document.cookie = `tiendanube_state=${state}; path=/; max-age=300; SameSite=Lax`;
-    const authorizeBase = `https://www.tiendanube.com/apps/${tnAppId}/authorize`;
-    const params = new URLSearchParams({
-      client_id: tnClientId,
-      response_type: "code",
-      redirect_uri: tnRedirectUri,
-      scope: tnScopes,
-      state,
-    });
-    window.location.href = `${authorizeBase}?${params.toString()}`;
-  };
   const handleLogout = async () => {
     try {
       const response = await fetch("/api/auth/logout", { method: "POST" });
@@ -530,15 +382,6 @@ export default function DashboardPage() {
       >
         ¿Estás seguro de que deseas desconectar tu cuenta de MercadoLibre?
       </Modal>
-      <Modal
-        title="Desconectar cuenta de Tienda Nube"
-        open={tnDisconnectModal}
-        onClose={() => setTnDisconnectModal(false)}
-        onConfirm={confirmTiendaNubeDisconnect}
-        confirmText="Desconectar"
-      >
-        ¿Estás seguro de que deseas desconectar tu cuenta de Tienda Nube?
-      </Modal>
 
       {/* Dashboard principal */}
       <div className="min-h-screen bg-fiddo-blue/10 py-8">
@@ -563,54 +406,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Integraciones */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Tienda Nube</h2>
-              {userProfile?.tiendanube.connected ? (
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                    <span className="text-green-700 font-medium">Conectado</span>
-                  </div>
-                  {userProfile.tiendanube.profile && (
-                    <>
-                      {userProfile.tiendanube.profile?.name && (
-                        <div>
-                          <span className="text-gray-600">Tienda:</span>
-                          <span className="ml-2 font-medium">{userProfile.tiendanube.profile.name}</span>
-                        </div>
-                      )}
-                      {userProfile.tiendanube.profile?.domain && (
-                        <div>
-                          <span className="text-gray-600">Dominio:</span>
-                          <span className="ml-2 font-medium">{userProfile.tiendanube.profile.domain}</span>
-                        </div>
-                      )}
-                    </>
-                  )}
-                  <button
-                    onClick={handleTiendaNubeDisconnect}
-                    className="w-full rounded-md bg-fiddo-orange/20 px-4 py-2 font-medium text-fiddo-orange transition-colors hover:bg-fiddo-orange/30"
-                  >
-                    Desconectar cuenta
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
-                    <span className="text-gray-600">No conectado</span>
-                  </div>
-                  <button
-                    onClick={handleTiendaNubeConnect}
-                    className="w-full rounded-md bg-fiddo-turquoise px-4 py-2 font-bold text-white transition-colors hover:bg-fiddo-blue"
-                  >
-                    Conectar con Tienda Nube
-                  </button>
-                </div>
-              )}
-            </div>
-
+          <div className="grid grid-cols-1 gap-6 mb-6">
             {/* Estado de MercadoLibre */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">MercadoLibre</h2>
@@ -825,159 +621,6 @@ export default function DashboardPage() {
                             </div>
                           </div>
                         )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-600">Aún no hay productos.</p>
-              )
-            )}
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Compradores (Tienda Nube)</h2>
-            <div className="flex flex-wrap items-center mb-4 gap-4">
-              <div className="flex items-center">
-                <label className="mr-2 text-sm text-gray-700">Compras:</label>
-                <select
-                  value={tnPurchaseFilter}
-                  onChange={(e) => setTnPurchaseFilter(e.target.value)}
-                  className="border rounded px-2 py-1 text-sm"
-                >
-                  <option value="">Todas</option>
-                  <option value="1">1 compra</option>
-                  <option value="1-5">Entre 1 y 5</option>
-                  <option value="5-10">Entre 5 y 10</option>
-                  <option value="10+">Más de 10</option>
-                </select>
-              </div>
-              <div className="flex items-center">
-                <label className="mr-2 text-sm text-gray-700">Ubicación:</label>
-                <select
-                  value={tnProvinceFilter}
-                  onChange={(e) => setTnProvinceFilter(e.target.value)}
-                  className="border rounded px-2 py-1 text-sm"
-                >
-                  <option value="">Todas</option>
-                  {tnAvailableProvinces.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button
-                onClick={() => notify("La mensajería masiva aún no está disponible para Tienda Nube.")}
-                className="ml-auto rounded bg-fiddo-blue px-3 py-1 text-sm font-medium text-white hover:bg-fiddo-turquoise"
-              >
-                Enviar mensaje a todos
-              </button>
-            </div>
-            {!userProfile?.tiendanube.connected ? (
-              <p className="text-gray-600">Usuario no conectado a Tienda Nube.</p>
-            ) : tnCustomersLoading ? (
-              <p className="text-gray-600">Cargando...</p>
-            ) : (
-              tnFilteredCustomers.length > 0 ? (
-                <>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre completo</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provincia</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Compras</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {tnFilteredCustomers
-                          .slice((tnCustomersPage - 1) * TN_CUSTOMERS_PER_PAGE, tnCustomersPage * TN_CUSTOMERS_PER_PAGE)
-                          .map((customer) => (
-                            <tr key={customer.id} className="hover:bg-gray-50">
-                              <td className="px-4 py-2 text-sm text-gray-900">{customer.id}</td>
-                              <td className="px-4 py-2 text-sm text-gray-900">{customer.nickname}</td>
-                              <td className="px-4 py-2 text-sm text-gray-900">
-                                {customer.firstName || customer.lastName
-                                  ? `${customer.firstName || ''} ${customer.lastName || ''}`.trim()
-                                  : '-'}
-                              </td>
-                              <td className="px-4 py-2 text-sm text-gray-900">{customer.province || '-'}</td>
-                              <td className="px-4 py-2 text-sm text-gray-900">{customer.purchaseCount}</td>
-                              <td className="px-4 py-2 text-sm text-gray-900">
-                                <button
-                                  className="rounded bg-fiddo-blue px-3 py-1 text-white text-xs"
-                                  onClick={() => notify("La mensajería directa aún no está disponible para Tienda Nube.")}
-                                >
-                                  Enviar mensaje
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="flex justify-center items-center gap-2 mt-6">
-                    <button
-                      className="px-3 py-1 rounded bg-neutral-200 text-gray-700 disabled:opacity-50"
-                      onClick={() => setTnCustomersPage((p) => Math.max(1, p - 1))}
-                      disabled={tnCustomersPage === 1}
-                    >Anterior</button>
-                    {Array.from({ length: Math.ceil(tnFilteredCustomers.length / TN_CUSTOMERS_PER_PAGE) }, (_, i) => i + 1).map((n) => (
-                      <button
-                        key={n}
-                        className={`px-3 py-1 rounded ${n === tnCustomersPage ? 'bg-fiddo-orange text-white' : 'bg-neutral-100 text-gray-700'}`}
-                        onClick={() => setTnCustomersPage(n)}
-                        disabled={n === tnCustomersPage}
-                      >{n}</button>
-                    ))}
-                    <button
-                      className="px-3 py-1 rounded bg-neutral-200 text-gray-700 disabled:opacity-50"
-                      onClick={() => setTnCustomersPage((p) => p + 1)}
-                      disabled={tnCustomersPage === Math.ceil(tnFilteredCustomers.length / TN_CUSTOMERS_PER_PAGE) || tnFilteredCustomers.length === 0}
-                    >Siguiente</button>
-                  </div>
-                </>
-              ) : (
-                <p className="text-gray-600">No hay compradores.</p>
-              )
-            )}
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Productos (Tienda Nube)</h2>
-            {!userProfile?.tiendanube.connected ? (
-              <p className="text-gray-600">Usuario no conectado a Tienda Nube.</p>
-            ) : tnProductsLoading ? (
-              <p className="text-gray-600">Cargando...</p>
-            ) : (
-              tnProducts.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {tnProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="border rounded-lg overflow-hidden shadow hover:shadow-lg transition bg-white"
-                    >
-                      <div className="w-full h-40 flex items-center justify-center bg-white">
-                        <Image
-                          src={product.thumbnail}
-                          alt={product.title}
-                          width={300}
-                          height={160}
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </div>
-                      <div className="p-4 flex flex-col gap-2 bg-neutral-100">
-                        <div className="font-semibold text-gray-900">{product.title}</div>
-                        <div className="text-fiddo-blue font-bold text-lg">${product.price}</div>
-                        <div className="text-xs text-gray-500">Stock: {product.available_quantity}</div>
-                        <button
-                          onClick={() => notify("Las promociones aún no están disponibles para Tienda Nube.")}
-                          className="rounded bg-fiddo-orange px-3 py-1 text-white mt-2"
-                        >
-                          Aplicar promoción
-                        </button>
                       </div>
                     </div>
                   ))}
