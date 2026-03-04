@@ -90,227 +90,110 @@ export default function DashboardPage() {
     });
   }, [customers, purchaseFilter, provinceFilter]);
 
-  // 1. Cargar perfil de usuario solo al montar
+  // 1. CARGA DE PERFIL SIMULADA (Para el Demo)
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await fetch("/api/user/profile");
-        if (response.ok) {
-          const data = await response.json();
-          setUserProfile(data);
+    setUserProfile({
+      user: { id: "demo", name: "Tobías Choclin", email: "video@fiddo.com", createdAt: new Date().toISOString() },
+      mercadolibre: {
+        connected: true,
+        profile: {
+          nickname: "TOBIAS_STORE",
+          first_name: "Tobías",
+          last_name: "Choclin",
+          email: "video@fiddo.com",
+          permalink: "#"
         }
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchUserProfile();
-    // Verificar si hay mensajes de error o éxito en la URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const error = urlParams.get("error");
-    const success = urlParams.get("success");
-    if (error === "MLAccountAlreadyLinked") {
-      notify("⚠️ Esta cuenta de MercadoLibre ya está conectada a otro usuario. Por favor, usa una cuenta diferente.");
-    } else if (error === "TokenError") {
-      notify("❌ Error al conectar con MercadoLibre. Por favor, inténtalo de nuevo.");
-    } else if (success === "true") {
-      notify("✅ ¡Conexión con MercadoLibre exitosa!");
-      fetchUserProfile();
-    }
-    if (error || success) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [notify]);
+    });
+    setLoading(false);
+  }, []);
 
-  // 2. Cargar compradores cuando userProfile cambia y está conectado
+  // 2. CARGA DE COMPRADORES SIMULADA (Para el Demo)
   useEffect(() => {
-    if (!userProfile?.mercadolibre.connected) return;
-    const fetchCustomers = async () => {
-      setCustomersLoading(true);
-      try {
-        const offset = (customersPage - 1) * CUSTOMERS_PER_PAGE;
-        const response = await fetch(`/api/customers?limit=${CUSTOMERS_PER_PAGE}&offset=${offset}`);
-        if (response.ok) {
-          const data = await response.json();
-          setCustomers(data.items);
-          const provs = Array.from(new Set(data.items.map((c: Customer) => c.province).filter((p: string | null): p is string => Boolean(p)))).sort();
-          setAvailableProvinces(provs as string[]);
-        } else {
-          console.error("Error cargando clientes");
+    setCustomersLoading(true);
+    setTimeout(() => {
+      setCustomers([
+        { id: "c1", mercadolibreId: "918273645", nickname: "JUAN_PEREZ99", firstName: "Juan", lastName: "Pérez", purchaseCount: 4, province: "Buenos Aires" },
+        { id: "c2", mercadolibreId: "192837465", nickname: "MARIA.GOMEZ", firstName: "María", lastName: "Gómez", purchaseCount: 1, province: "Córdoba" },
+        { id: "c3", mercadolibreId: "564738291", nickname: "TECH_STORE_AR", firstName: "Carlos", lastName: "López", purchaseCount: 12, province: "Santa Fe" },
+        { id: "c4", mercadolibreId: "223344556", nickname: "ANA_DEV", firstName: "Ana", lastName: "Martínez", purchaseCount: 6, province: "Mendoza" },
+        { id: "c5", mercadolibreId: "998877665", nickname: "GAMER_XX", firstName: "Lucas", lastName: "Silva", purchaseCount: 2, province: "Buenos Aires" },
+        { id: "c6", mercadolibreId: "445566778", nickname: "ROBERTO_M", firstName: "Roberto", lastName: "Mendoza", purchaseCount: 3, province: "Salta" },
+      ]);
+      setAvailableProvinces(["Buenos Aires", "Córdoba", "Mendoza", "Santa Fe", "Salta"]);
+      setCustomersLoading(false);
+    }, 400); 
+  }, [customersPage]);
+
+// 3. CARGA DE PRODUCTOS SIMULADA (Para el Demo)
+  useEffect(() => {
+    setProductsLoading(true);
+    setTimeout(() => {
+      setProducts([
+        { 
+          id: "p1", 
+          title: "Auriculares Inalámbricos Bluetooth Pro", 
+          price: 45000, 
+          // URL corregida para el demo
+          thumbnail: "/auriculares.jpg", 
+          available_quantity: 15 
+        },
+        { 
+          id: "p2", 
+          title: "Smartwatch Deportivo Waterproof X", 
+          price: 85000, 
+          thumbnail: "/smartwatch.jpg", 
+          available_quantity: 8 
+        },
+        { 
+          id: "p3", 
+          title: "Teclado Mecánico RGB Switch Blue", 
+          price: 62000, 
+          thumbnail: "/teclado.jpg", 
+          available_quantity: 22 
         }
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setCustomersLoading(false);
-      }
-    };
-    fetchCustomers();
-  }, [userProfile, customersPage]);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setProductsLoading(true);
-      try {
-        const offset = (productsPage - 1) * PRODUCTS_PER_PAGE;
-        const response = await fetch(`/api/products?limit=${PRODUCTS_PER_PAGE}&offset=${offset}`);
-        if (!response.ok) throw new Error("Error al obtener productos");
-        const data = await response.json();
-        setProducts(data.items);
-      } catch (error) {
-        console.error("Error al obtener productos:", error);
-      } finally {
-        setProductsLoading(false);
-      }
-    };
-    if (userProfile?.mercadolibre.connected) {
-      fetchProducts();
-    }
-  }, [userProfile, productsPage]);
+      ]);
+      setProductsLoading(false);
+    }, 400);
+  }, [productsPage]);
 
   // Handlers para los modales y acciones
   const handleSendMessage = async () => {
     if (!messageModal.customer || !messageModal.text) return;
-    try {
-      const response = await fetch(`/api/customers/${messageModal.customer.id}/message`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: messageModal.text, orderId: messageModal.customer.lastOrderId }),
-      });
-      if (response.ok) {
-        notify("Mensaje enviado");
-      } else {
-        notify("No se pudo enviar el mensaje");
-      }
-    } catch (error) {
-      console.error("Error al enviar mensaje individual:", error);
-      notify("No se pudo enviar el mensaje");
-    } finally {
-      setMessageModal({ open: false, customer: undefined, text: "" });
-    }
+    notify("✅ Mensaje enviado a " + messageModal.customer.nickname);
+    setMessageModal({ open: false, customer: undefined, text: "" });
   };
+
   const handleSendBulk = async () => {
     if (!bulkModal.text) return;
-    try {
-      const responses = await Promise.all(
-        filteredCustomers.map((customer) =>
-          fetch(`/api/customers/${customer.id}/message`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: bulkModal.text, orderId: customer.lastOrderId }),
-          })
-        )
-      );
-      const failed = responses.filter((r) => !r.ok);
-      if (failed.length > 0) {
-        notify(`Mensajes enviados con ${failed.length} errores.`);
-      } else {
-        notify("Mensajes enviados");
-      }
-    } catch (error) {
-      console.error("Error al enviar mensajes masivos:", error);
-      notify("No se pudieron enviar los mensajes");
-    } finally {
-      setBulkModal({ open: false, text: "" });
-    }
+    notify("✅ Mensajes masivos enviados correctamente");
+    setBulkModal({ open: false, text: "" });
   };
+
   const handleApplyPromotion = async () => {
-    const discount = Number(promotionModal.discount);
-    const days = Number(promotionModal.days);
-    if (!promotionModal.productId || isNaN(discount) || discount <= 0 || isNaN(days) || days <= 0) {
-      notify("Datos inválidos");
-      return;
-    }
-    const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-    try {
-      const res = await fetch(`/api/products/${promotionModal.productId}/promotion`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ discount, expiresAt }),
-      });
-      let data: { permalink?: string; promotionId?: string; expiresAt?: string; message?: string; details?: string } = {};
-      try { data = await res.json(); } catch { data = {}; }
-      if (!res.ok) {
-        notify(`${data.message || "No se pudo aplicar la promoción"}${data.details ? `: ${data.details}` : ""}`);
-        return;
-      }
-      if (data.permalink && data.promotionId && data.expiresAt) {
-        setPromotionData((prev) => ({
-          ...prev,
-          [promotionModal.productId as string]: {
-            link: data.permalink!,
-            promotionId: data.promotionId!,
-            expiresAt: data.expiresAt!,
-          },
-        }));
-      }
-      notify("Promoción aplicada");
-    } catch (error) {
-      console.error("Error al aplicar la promoción:", error);
-      notify("No se pudo aplicar la promoción");
-    } finally {
-      setPromotionModal({ open: false, productId: undefined, discount: "", days: "" });
-    }
+    notify("✅ Promoción aplicada con éxito");
+    setPromotionModal({ open: false, productId: undefined, discount: "", days: "" });
   };
+
   const handleCopyLink = (link: string) => {
     navigator.clipboard.writeText(link);
     notify("Link copiado");
   };
-  const handleMercadoLibreDisconnect = () => setDisconnectModal(true);
-  const confirmDisconnect = async () => {
-    try {
-      const response = await fetch("/api/auth/mercadolibre/disconnect", { method: "POST" });
-      if (response.ok) {
-        notify("Cuenta de MercadoLibre desconectada exitosamente");
-        const profileResponse = await fetch("/api/user/profile");
-        if (profileResponse.ok) {
-          const data = await profileResponse.json();
-          setUserProfile(data);
-        }
-      } else {
-        notify("Error al desconectar la cuenta");
-      }
-    } catch (error) {
-      console.error("Error al desconectar MercadoLibre:", error);
-      notify("Error al desconectar la cuenta");
-    } finally {
-      setDisconnectModal(false);
-    }
-  };
-  function handleMercadoLibreConnect() {
-    const codeVerifier = base64URLEncode(Buffer.from(window.crypto.getRandomValues(new Uint8Array(32))));
-    generateCodeChallenge(codeVerifier).then((codeChallenge) => {
-      document.cookie = `pkce_code_verifier=${codeVerifier}; path=/; max-age=300; SameSite=Lax`;
-      const params = new URLSearchParams({
-        response_type: "code",
-        client_id: mlAppId!,
-        redirect_uri: mlRedirectUri!,
-        code_challenge: codeChallenge,
-        code_challenge_method: "S256",
-      });
-      const authUrl = `https://auth.mercadolibre.com.ar/authorization?${params.toString()}`;
-      window.location.href = authUrl;
-    });
-  }
+
   const handleLogout = async () => {
-    try {
-      const response = await fetch("/api/auth/logout", { method: "POST" });
-      if (response.ok) {
-        router.push("/login");
-      } else {
-        console.error("Falló el cierre de sesión en el servidor");
-      }
-    } catch (error) {
-      console.error("Error al intentar cerrar sesión:", error);
-    }
+    router.push("/login");
   };
+
+  function handleMercadoLibreConnect() {
+    notify("Iniciando conexión...");
+  }
 
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fiddo-blue mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando...</p>
+          <p className="mt-4 text-gray-600">Cargando dashboard...</p>
         </div>
       </div>
     );
@@ -331,9 +214,10 @@ export default function DashboardPage() {
           rows={4}
           value={messageModal.text}
           onChange={e => setMessageModal(m => ({ ...m, text: e.target.value }))}
-          placeholder="Escribe el mensaje..."
+          placeholder="Escribe el mensaje individual..."
         />
       </Modal>
+
       <Modal
         title="Enviar mensaje masivo"
         open={bulkModal.open}
@@ -349,6 +233,7 @@ export default function DashboardPage() {
           placeholder="Mensaje para todos los compradores filtrados..."
         />
       </Modal>
+
       <Modal
         title="Aplicar promoción"
         open={promotionModal.open}
@@ -372,15 +257,6 @@ export default function DashboardPage() {
             onChange={e => setPromotionModal(m => ({ ...m, days: e.target.value }))}
           />
         </div>
-      </Modal>
-      <Modal
-        title="Desconectar cuenta de MercadoLibre"
-        open={disconnectModal}
-        onClose={() => setDisconnectModal(false)}
-        onConfirm={confirmDisconnect}
-        confirmText="Desconectar"
-      >
-        ¿Estás seguro de que deseas desconectar tu cuenta de MercadoLibre?
       </Modal>
 
       {/* Dashboard principal */}
@@ -407,50 +283,31 @@ export default function DashboardPage() {
 
           {/* Integraciones */}
           <div className="grid grid-cols-1 gap-6 mb-6">
-            {/* Estado de MercadoLibre */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">MercadoLibre</h2>
-              {userProfile?.mercadolibre.connected ? (
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                    <span className="text-green-700 font-medium">Conectado</span>
-                  </div>
-                  {userProfile.mercadolibre.profile && (
-                    <>
-                      <div>
-                        <span className="text-gray-600">Usuario:</span>
-                        <span className="ml-2 font-medium">{userProfile.mercadolibre.profile.nickname}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Nombre:</span>
-                        <span className="ml-2 font-medium">
-                          {userProfile.mercadolibre.profile.first_name} {userProfile.mercadolibre.profile.last_name}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                  <button
-                    onClick={handleMercadoLibreDisconnect}
-                    className="w-full rounded-md bg-fiddo-orange/20 px-4 py-2 font-medium text-fiddo-orange transition-colors hover:bg-fiddo-orange/30"
-                  >
-                    Desconectar cuenta
-                  </button>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                  <span className="text-green-700 font-medium">Conectado</span>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <div className="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
-                    <span className="text-gray-600">No conectado</span>
-                  </div>
-                  <button
-                    onClick={handleMercadoLibreConnect}
-                    className="w-full rounded-md bg-fiddo-turquoise px-4 py-2 font-bold text-white transition-colors hover:bg-fiddo-blue"
-                  >
-                    Conectar con MercadoLibre
-                  </button>
-                </div>
-              )}
+                {userProfile?.mercadolibre.profile && (
+                  <>
+                    <div>
+                      <span className="text-gray-600">Usuario:</span>
+                      <span className="ml-2 font-medium">{userProfile.mercadolibre.profile.nickname}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Nombre:</span>
+                      <span className="ml-2 font-medium">
+                        {userProfile.mercadolibre.profile.first_name} {userProfile.mercadolibre.profile.last_name}
+                      </span>
+                    </div>
+                  </>
+                )}
+                <button className="w-full rounded-md bg-fiddo-orange/20 px-4 py-2 font-medium text-fiddo-orange">
+                  Cuenta verificada
+                </button>
+              </div>
             </div>
           </div>
 
@@ -458,176 +315,84 @@ export default function DashboardPage() {
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Compradores</h2>
             <div className="flex flex-wrap items-center mb-4 gap-4">
-              <div className="flex items-center">
-                <label className="mr-2 text-sm text-gray-700">Compras:</label>
-                <select
-                  value={purchaseFilter}
-                  onChange={(e) => setPurchaseFilter(e.target.value)}
-                  className="border rounded px-2 py-1 text-sm"
-                >
-                  <option value="">Todas</option>
-                  <option value="1">1 compra</option>
-                  <option value="1-5">Entre 1 y 5</option>
-                  <option value="5-10">Entre 5 y 10</option>
-                  <option value="10+">Más de 10</option>
-                </select>
-              </div>
-              <div className="flex items-center">
-                <label className="mr-2 text-sm text-gray-700">Ubicación:</label>
-                <select
-                  value={provinceFilter}
-                  onChange={(e) => setProvinceFilter(e.target.value)}
-                  className="border rounded px-2 py-1 text-sm"
-                >
-                  <option value="">Todas</option>
-                  {availableProvinces.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
+              <div className="flex items-center text-sm">
+                <label className="mr-2 text-gray-700">Filtro compras:</label>
+                <select className="border rounded px-2 py-1">
+                  <option>Todas</option>
+                  <option>Recurrentes</option>
                 </select>
               </div>
               <button
                 onClick={() => setBulkModal({ open: true, text: "" })}
                 className="ml-auto rounded bg-fiddo-blue px-3 py-1 text-sm font-medium text-white hover:bg-fiddo-turquoise"
               >
-                Enviar mensaje a todos
+                Enviar mensaje masivo
               </button>
             </div>
-            {!userProfile?.mercadolibre.connected ? (
-              <p className="text-gray-600">Usuario no conectado a Mercado Libre.</p>
-            ) : customersLoading ? (
-              <p className="text-gray-600">Cargando...</p>
+            
+            {customersLoading ? (
+              <p className="text-gray-600">Cargando compradores...</p>
             ) : (
-              filteredCustomers.length > 0 ? (
-                <>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">ID</th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Nickname</th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Nombre</th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Provincia</th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Compras</th>
-                          <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {filteredCustomers
-                          .slice((customersPage - 1) * CUSTOMERS_PER_PAGE, customersPage * CUSTOMERS_PER_PAGE)
-                          .map((customer) => (
-                            <tr key={customer.id} className="hover:bg-gray-50">
-                              <td className="px-4 py-2 text-sm text-gray-900">{customer.mercadolibreId}</td>
-                              <td className="px-4 py-2 text-sm text-gray-900">{customer.nickname}</td>
-                              <td className="px-4 py-2 text-sm text-gray-900">
-                                {customer.firstName || customer.lastName
-                                  ? `${customer.firstName || ''} ${customer.lastName || ''}`.trim()
-                                  : '-'}
-                              </td>
-                              <td className="px-4 py-2 text-sm text-gray-900">{customer.province || '-'}</td>
-                              <td className="px-4 py-2 text-sm text-gray-900">{customer.purchaseCount}</td>
-                              <td className="px-4 py-2 text-sm text-gray-900">
-                                <button
-                                  className="rounded bg-fiddo-blue px-3 py-1 text-white text-xs"
-                                  onClick={() => setMessageModal({ open: true, customer, text: '' })}
-                                >
-                                  Enviar mensaje
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {/* Paginación compradores */}
-                  <div className="flex justify-center items-center gap-2 mt-6">
-                    <button
-                      className="px-3 py-1 rounded bg-neutral-200 text-gray-700 disabled:opacity-50"
-                      onClick={() => setCustomersPage((p) => Math.max(1, p - 1))}
-                      disabled={customersPage === 1}
-                    >Anterior</button>
-                    {Array.from({ length: Math.ceil(filteredCustomers.length / CUSTOMERS_PER_PAGE) }, (_, i) => i + 1).map((n) => (
-                      <button
-                        key={n}
-                        className={`px-3 py-1 rounded ${n === customersPage ? 'bg-fiddo-orange text-white' : 'bg-neutral-100 text-gray-700'}`}
-                        onClick={() => setCustomersPage(n)}
-                        disabled={n === customersPage}
-                      >{n}</button>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Nickname</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Nombre</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Provincia</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Compras</th>
+                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {customers.map((customer) => (
+                      <tr key={customer.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{customer.nickname}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{customer.firstName} {customer.lastName}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{customer.province}</td>
+                        <td className="px-4 py-3 text-sm font-bold text-fiddo-blue">{customer.purchaseCount}</td>
+                        <td className="px-4 py-3">
+                          <button
+                            className="rounded bg-fiddo-blue px-3 py-1 text-white text-xs hover:bg-fiddo-turquoise transition"
+                            onClick={() => setMessageModal({ open: true, customer, text: '' })}
+                          >
+                            Mensaje
+                          </button>
+                        </td>
+                      </tr>
                     ))}
-                    <button
-                      className="px-3 py-1 rounded bg-neutral-200 text-gray-700 disabled:opacity-50"
-                      onClick={() => setCustomersPage((p) => p + 1)}
-                      disabled={customersPage === Math.ceil(filteredCustomers.length / CUSTOMERS_PER_PAGE) || filteredCustomers.length === 0}
-                    >Siguiente</button>
-                  </div>
-                </>
-              ) : (
-                <p className="text-gray-600">No hay compradores.</p>
-              )
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
-          <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Productos</h2>
-            {!userProfile?.mercadolibre.connected ? (
-              <p className="text-gray-600">Usuario no conectado a Mercado Libre.</p>
-            ) : productsLoading ? (
-              <p className="text-gray-600">Cargando...</p>
+
+          {/* Listado de productos */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Productos en Catálogo</h2>
+            {productsLoading ? (
+              <p className="text-gray-600">Cargando productos...</p>
             ) : (
-              products.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {products.map((product) => (
-                    <div
-                      key={product.id}
-                      className="border rounded-lg overflow-hidden shadow hover:shadow-lg transition bg-white"
-                    >
-                      <div className="w-full h-40 flex items-center justify-center bg-white">
-                        <Image
-                          src={product.thumbnail}
-                          alt={product.title}
-                          width={300}
-                          height={160}
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </div>
-                      <div className="p-4 flex flex-col gap-2 bg-neutral-100">
-                        <div className="font-semibold text-gray-900">{product.title}</div>
-                        <div className="text-fiddo-blue font-bold text-lg">${product.price}</div>
-                        <div className="text-xs text-gray-500">Stock: {product.available_quantity}</div>
-                        <button
-                          onClick={() => setPromotionModal({ open: true, productId: product.id, discount: '', days: '' })}
-                          className="rounded bg-fiddo-orange px-3 py-1 text-white mt-2"
-                        >
-                          Aplicar promoción
-                        </button>
-                        {promotionData[product.id] && (
-                          <div className="mt-2 flex flex-col gap-2">
-                            <a
-                              href={promotionData[product.id].link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-fiddo-blue underline"
-                            >
-                              Ver promoción activa
-                            </a>
-                            <button
-                              onClick={() => handleCopyLink(promotionData[product.id].link)}
-                              className="rounded bg-fiddo-blue px-2 py-1 text-xs text-white"
-                            >
-                              Copiar link
-                            </button>
-                            <div className="text-xs text-gray-500">
-                              Expira: {new Date(promotionData[product.id].expiresAt).toLocaleString()}
-                            </div>
-                          </div>
-                        )}
-                      </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {products.map((product) => (
+                  <div key={product.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition bg-white flex flex-col">
+                    <div className="w-full h-32 flex items-center justify-center p-2">
+                      <img src={product.thumbnail} alt={product.title} className="max-w-full max-h-full object-contain" />
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-600">Aún no hay productos.</p>
-              )
+                    <div className="p-3 flex flex-col flex-grow bg-neutral-50 border-t">
+                      <div className="text-xs font-bold text-gray-800 line-clamp-2 min-h-[32px]">{product.title}</div>
+                      <div className="text-fiddo-blue font-black text-base my-1">${product.price.toLocaleString()}</div>
+                      <div className="text-[10px] text-gray-500 mb-3">Disponibles: {product.available_quantity}</div>
+                      <button
+                        onClick={() => setPromotionModal({ open: true, productId: product.id, discount: '', days: '' })}
+                        className="rounded-full bg-fiddo-orange py-1 text-[10px] font-bold text-white hover:bg-fiddo-turquoise transition mt-auto"
+                      >
+                        Crear Promoción
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>

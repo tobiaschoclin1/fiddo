@@ -6,14 +6,15 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Iniciando carga de datos de prueba...');
 
-  // 1. Instanciación del Vendedor (User)
-  const seller = await prisma.user.create({
-    data: {
-      email: faker.internet.email(),
-      name: faker.person.fullName(),
-      password: faker.internet.password(), 
-    }
+// 1. Buscar al Vendedor (User) que creaste en la web
+  const seller = await prisma.user.findUnique({
+    where: { email: "video@fiddo.com" } // Asegúrate de poner el mail exacto que usaste
   });
+
+  if (!seller) {
+    console.error("Vendedor no encontrado. Regístrate en la web primero.");
+    process.exit(1);
+  }
 
   // 2. Instanciación del Catálogo (Product)
   const products = [];
