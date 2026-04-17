@@ -23,6 +23,8 @@
     "autoprefixer": "^10",
     "bcryptjs": "^3.0.2",
     "cookie": "^1.0.2",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.4",
     "jose": "^6.0.12",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
@@ -37,8 +39,6 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@faker-js/faker": "^10.3.0",
-    "eslint": "^9",
-    "eslint-config-next": "15.4.4",
     "tsx": "^4.21.0"
   }
 }
