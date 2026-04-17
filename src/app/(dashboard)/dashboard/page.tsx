@@ -90,71 +90,71 @@ export default function DashboardPage() {
     });
   }, [customers, purchaseFilter, provinceFilter]);
 
-  // 1. CARGA DE PERFIL SIMULADA (Para el Demo)
+  // 1. CARGA DE PERFIL REAL desde la API
   useEffect(() => {
-    setUserProfile({
-      user: { id: "demo", name: "Tobías Choclin", email: "video@fiddo.com", createdAt: new Date().toISOString() },
-      mercadolibre: {
-        connected: true,
-        profile: {
-          nickname: "TOBIAS_STORE",
-          first_name: "Tobías",
-          last_name: "Choclin",
-          email: "video@fiddo.com",
-          permalink: "#"
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/user/profile');
+        if (!res.ok) {
+          throw new Error('Error cargando perfil');
         }
+        const data = await res.json();
+        setUserProfile(data);
+      } catch (error) {
+        console.error('Error:', error);
+        notify('Error cargando perfil');
+        router.push('/login');
+      } finally {
+        setLoading(false);
       }
-    });
-    setLoading(false);
-  }, []);
+    }
+    loadProfile();
+  }, [notify, router]);
 
-  // 2. CARGA DE COMPRADORES SIMULADA (Para el Demo)
+  // 2. CARGA DE COMPRADORES REAL desde la API
   useEffect(() => {
-    setCustomersLoading(true);
-    setTimeout(() => {
-      setCustomers([
-        { id: "c1", mercadolibreId: "918273645", nickname: "JUAN_PEREZ99", firstName: "Juan", lastName: "Pérez", purchaseCount: 4, province: "Buenos Aires" },
-        { id: "c2", mercadolibreId: "192837465", nickname: "MARIA.GOMEZ", firstName: "María", lastName: "Gómez", purchaseCount: 1, province: "Córdoba" },
-        { id: "c3", mercadolibreId: "564738291", nickname: "TECH_STORE_AR", firstName: "Carlos", lastName: "López", purchaseCount: 12, province: "Santa Fe" },
-        { id: "c4", mercadolibreId: "223344556", nickname: "ANA_DEV", firstName: "Ana", lastName: "Martínez", purchaseCount: 6, province: "Mendoza" },
-        { id: "c5", mercadolibreId: "998877665", nickname: "GAMER_XX", firstName: "Lucas", lastName: "Silva", purchaseCount: 2, province: "Buenos Aires" },
-        { id: "c6", mercadolibreId: "445566778", nickname: "ROBERTO_M", firstName: "Roberto", lastName: "Mendoza", purchaseCount: 3, province: "Salta" },
-      ]);
-      setAvailableProvinces(["Buenos Aires", "Córdoba", "Mendoza", "Santa Fe", "Salta"]);
-      setCustomersLoading(false);
-    }, 400); 
+    async function loadCustomers() {
+      setCustomersLoading(true);
+      try {
+        const res = await fetch('/api/customers');
+        if (res.ok) {
+          const data = await res.json();
+          setCustomers(data.customers || []);
+          const provinces = [...new Set(data.customers?.map((c: Customer) => c.province).filter(Boolean))];
+          setAvailableProvinces(provinces as string[]);
+        } else {
+          setCustomers([]);
+        }
+      } catch (error) {
+        console.error('Error cargando clientes:', error);
+        setCustomers([]);
+      } finally {
+        setCustomersLoading(false);
+      }
+    }
+    loadCustomers();
   }, [customersPage]);
 
-// 3. CARGA DE PRODUCTOS SIMULADA (Para el Demo)
+  // 3. CARGA DE PRODUCTOS REAL desde MercadoLibre
   useEffect(() => {
-    setProductsLoading(true);
-    setTimeout(() => {
-      setProducts([
-        { 
-          id: "p1", 
-          title: "Auriculares Inalámbricos Bluetooth Pro", 
-          price: 45000, 
-          // URL corregida para el demo
-          thumbnail: "/auriculares.jpg", 
-          available_quantity: 15 
-        },
-        { 
-          id: "p2", 
-          title: "Smartwatch Deportivo Waterproof X", 
-          price: 85000, 
-          thumbnail: "/smartwatch.jpg", 
-          available_quantity: 8 
-        },
-        { 
-          id: "p3", 
-          title: "Teclado Mecánico RGB Switch Blue", 
-          price: 62000, 
-          thumbnail: "/teclado.jpg", 
-          available_quantity: 22 
+    async function loadProducts() {
+      setProductsLoading(true);
+      try {
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          setProducts(data.products || []);
+        } else {
+          setProducts([]);
         }
-      ]);
-      setProductsLoading(false);
-    }, 400);
+      } catch (error) {
+        console.error('Error cargando productos:', error);
+        setProducts([]);
+      } finally {
+        setProductsLoading(false);
+      }
+    }
+    loadProducts();
   }, [productsPage]);
 
   // Handlers para los modales y acciones
