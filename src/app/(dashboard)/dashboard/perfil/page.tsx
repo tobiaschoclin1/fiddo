@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/Toast";
+import { initiateMLOAuth } from "@/lib/mercadolibre-oauth";
 
 interface UserProfile {
   user: { id: string; name: string; email: string; createdAt: string };
@@ -63,7 +64,7 @@ export default function PerfilPage() {
         <p className="text-slate-400 mt-1">Gestiona tu información personal</p>
       </header>
 
-      <div className="p-8 max-w-4xl">
+      <div className="p-8">
         {/* Profile Card */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-8 mb-6">
           <div className="flex items-start justify-between mb-6">
@@ -168,7 +169,10 @@ export default function PerfilPage() {
                 Desconectar
               </button>
             ) : (
-              <button className="px-4 py-2 bg-fiddo-orange text-white rounded-lg hover:shadow-lg transition">
+              <button
+                onClick={initiateMLOAuth}
+                className="px-4 py-2 bg-fiddo-orange text-white rounded-lg hover:shadow-lg transition"
+              >
                 Conectar
               </button>
             )}

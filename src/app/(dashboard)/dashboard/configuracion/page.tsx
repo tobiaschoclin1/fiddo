@@ -24,7 +24,7 @@ export default function ConfiguracionPage() {
         <p className="text-slate-400 mt-1">Personaliza tu experiencia</p>
       </header>
 
-      <div className="p-8 max-w-4xl space-y-6">
+      <div className="p-8 space-y-6">
         {/* Notificaciones */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
           <h2 className="text-xl font-bold text-white mb-4">Notificaciones</h2>

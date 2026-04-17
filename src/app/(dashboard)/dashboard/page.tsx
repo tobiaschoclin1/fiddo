@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
+import { initiateMLOAuth } from "@/lib/mercadolibre-oauth";
 
 interface Stats {
   totalProducts: number;
@@ -96,7 +97,7 @@ export default function DashboardPage() {
                 <p className="text-yellow-100/80">Para comenzar a gestionar tus productos y clientes, conecta tu cuenta de MercadoLibre</p>
               </div>
               <button
-                onClick={() => router.push('/dashboard/configuracion')}
+                onClick={initiateMLOAuth}
                 className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-semibold rounded-lg transition shrink-0 ml-4"
               >
                 Conectar ahora
@@ -165,7 +166,7 @@ export default function DashboardPage() {
 
             {!isConnected && (
               <button
-                onClick={() => router.push('/dashboard/configuracion')}
+                onClick={initiateMLOAuth}
                 className="px-6 py-2 bg-gradient-to-r from-fiddo-orange to-fiddo-orange-light text-white rounded-lg hover:shadow-lg transition"
               >
                 Conectar
