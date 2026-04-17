@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build",
-    "start": "next start",
+    "build": "prisma generate && prisma migrate deploy && next build",
+    "start": "next start -p $PORT",
     "lint": "next lint",
     "tunnel": "npx localtunnel --port 3000 --subdomain tobiasdev",
     "dev-tunnel": "concurrently \"npm run dev\" \"npm run tunnel\"",
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@faker-js/faker": "^10.3.0",
     "@prisma/client": "^6.13.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie": "^0.6.0",
@@ -37,6 +38,7 @@
     "postcss": "^8",
     "prisma": "^6.13.0",
     "tailwindcss": "^3.4.0",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
