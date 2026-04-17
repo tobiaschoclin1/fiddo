@@ -286,27 +286,48 @@ export default function DashboardPage() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">MercadoLibre</h2>
               <div className="space-y-3">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                  <span className="text-green-700 font-medium">Conectado</span>
-                </div>
-                {userProfile?.mercadolibre.profile && (
+                {/* Estado de conexión real */}
+                {userProfile?.mercadolibre.connected ? (
                   <>
-                    <div>
-                      <span className="text-gray-600">Usuario:</span>
-                      <span className="ml-2 font-medium">{userProfile.mercadolibre.profile.nickname}</span>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                      <span className="text-green-700 font-medium">Conectado</span>
                     </div>
-                    <div>
-                      <span className="text-gray-600">Nombre:</span>
-                      <span className="ml-2 font-medium">
-                        {userProfile.mercadolibre.profile.first_name} {userProfile.mercadolibre.profile.last_name}
-                      </span>
+                    {userProfile.mercadolibre.profile && (
+                      <>
+                        <div>
+                          <span className="text-gray-600">Usuario:</span>
+                          <span className="ml-2 font-medium">{userProfile.mercadolibre.profile.nickname}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Nombre:</span>
+                          <span className="ml-2 font-medium">
+                            {userProfile.mercadolibre.profile.first_name} {userProfile.mercadolibre.profile.last_name}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                    <button className="w-full rounded-md bg-fiddo-orange/20 px-4 py-2 font-medium text-fiddo-orange">
+                      Cuenta verificada
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                      <span className="text-red-700 font-medium">No conectado</span>
                     </div>
+                    <p className="text-sm text-gray-600">
+                      Conecta tu cuenta de MercadoLibre para ver tus productos y clientes.
+                    </p>
+                    <button
+                      onClick={handleMercadoLibreConnect}
+                      className="w-full rounded-md bg-fiddo-blue px-4 py-2 font-medium text-white hover:bg-fiddo-turquoise transition"
+                    >
+                      Conectar MercadoLibre
+                    </button>
                   </>
                 )}
-                <button className="w-full rounded-md bg-fiddo-orange/20 px-4 py-2 font-medium text-fiddo-orange">
-                  Cuenta verificada
-                </button>
               </div>
             </div>
           </div>
