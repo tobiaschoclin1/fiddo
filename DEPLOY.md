@@ -69,10 +69,21 @@ Esto mantendrá tu app activa haciendo ping cada 5 minutos, evitando que Render 
 
 ### ⚠️ CRÍTICO: Sin estas variables la app NO funcionará
 
+**Variables REQUERIDAS:**
 ```env
 DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 JWT_SECRET=tu-clave-secreta-de-minimo-32-caracteres
+NEXT_PUBLIC_APP_URL=https://fiddo-app.onrender.com
 NODE_ENV=production
+```
+
+**Variables para MercadoLibre (opcional):**
+```env
+MERCADOLIBRE_APP_ID=tu_app_id
+MERCADOLIBRE_SECRET_KEY=tu_secret_key
+MERCADOLIBRE_REDIRECT_URI=https://fiddo-app.onrender.com/api/auth/mercadolibre/callback
+NEXT_PUBLIC_MERCADOLIBRE_APP_ID=tu_app_id
+NEXT_PUBLIC_MERCADOLIBRE_REDIRECT_URI=https://fiddo-app.onrender.com/api/auth/mercadolibre/callback
 ```
 
 **Generar `JWT_SECRET`:**
