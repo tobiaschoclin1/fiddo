@@ -1,7 +1,6 @@
 // src/app/login/page.tsx
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -30,29 +29,32 @@ export default function LoginPage() {
         throw new Error(data.message || 'Algo salió mal');
       }
 
-      // Si la respuesta es exitosa (200 OK), la cookie ya se estableció.
-      // Solo necesitamos redirigir al usuario.
       router.push('/dashboard');
 
     } catch (error: unknown) {
-  console.error('Error al iniciar sesión:', error);
-  notify(error instanceof Error ? error.message : 'Algo salió mal');
+      console.error('Error al iniciar sesión:', error);
+      notify(error instanceof Error ? error.message : 'Algo salió mal');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-fiddo-blue via-fiddo-turquoise to-fiddo-orange p-4">
-      <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-lg">
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
+      <div className="w-full max-w-md space-y-8 rounded-2xl bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 p-8 shadow-2xl">
         <div className="text-center flex flex-col items-center">
-          <img src="/brand/Fiddo.JPG" alt="Fiddo Logo" style={{height: 56, width: 'auto', maxWidth: 120}} className="mx-auto mb-2" />
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
+          <img src="/brand/Fiddo.JPG" alt="Fiddo" className="h-16 w-16 rounded-xl mb-4" />
+          <h1 className="font-bold text-3xl mb-2">
+            <span className="text-fiddo-blue">F</span>
+            <span className="text-fiddo-orange">i</span>
+            <span className="text-fiddo-turquoise">ddo</span>
+          </h1>
+          <h2 className="text-2xl font-bold text-white">
             Iniciar Sesión
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            ¿Aún no tienes cuenta?{' '}
-            <Link href="/register" className="font-medium text-fiddo-orange hover:text-fiddo-turquoise">
+          <p className="mt-2 text-sm text-slate-400">
+            ¿No tienes cuenta?{' '}
+            <Link href="/register" className="font-medium text-fiddo-orange hover:text-fiddo-orange-light transition">
               Regístrate aquí
             </Link>
           </p>
@@ -60,52 +62,46 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Correo Electrónico
+            <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+              Email
             </label>
-            <div className="mt-1">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                placeholder="tu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-fiddo-turquoise focus:outline-none focus:ring-fiddo-turquoise sm:text-sm"
-              />
-            </div>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              placeholder="tu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="block w-full appearance-none rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 focus:border-fiddo-turquoise focus:outline-none focus:ring-2 focus:ring-fiddo-turquoise/50"
+            />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
               Contraseña
             </label>
-            <div className="mt-1">
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-fiddo-turquoise focus:outline-none focus:ring-fiddo-turquoise sm:text-sm"
-              />
-            </div>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="block w-full appearance-none rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-slate-400 focus:border-fiddo-turquoise focus:outline-none focus:ring-2 focus:ring-fiddo-turquoise/50"
+            />
           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex w-full justify-center rounded-md border border-transparent bg-fiddo-blue py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-fiddo-turquoise focus:outline-none focus:ring-2 focus:ring-fiddo-turquoise focus:ring-offset-2 disabled:opacity-50"
-            >
-              {isLoading ? 'Ingresando...' : 'Ingresar'}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-3 rounded-lg bg-gradient-to-r from-fiddo-orange to-fiddo-turquoise text-white font-semibold hover:shadow-2xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Ingresando...' : 'Ingresar'}
+          </button>
         </form>
       </div>
     </main>

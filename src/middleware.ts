@@ -31,5 +31,14 @@ export async function middleware(request: NextRequest) {
 
 // El "matcher" especifica qué rutas debe proteger este middleware
 export const config = {
-  matcher: ['/dashboard/:path*'], // Protegerá /dashboard y todas sus sub-rutas
+  matcher: [
+    '/dashboard/:path*',
+    '/perfil/:path*',
+    '/configuracion/:path*',
+    '/productos/:path*',
+    '/clientes/:path*',
+    '/mensajes/:path*',
+    '/analytics/:path*',
+    '/promociones/:path*',
+  ],
 };
