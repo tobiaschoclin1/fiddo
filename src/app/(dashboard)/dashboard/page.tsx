@@ -184,8 +184,46 @@ export default function DashboardPage() {
     router.push("/login");
   };
 
-  function handleMercadoLibreConnect() {
-    notify("Iniciando conexión...");
+  async function handleMercadoLibreConnect() {
+    try {
+      // 1. Generar code verifier aleatorio (PKCE)
+      const array = new Uint8Array(32);
+      window.crypto.getRandomValues(array);
+      const codeVerifier = base64URLEncode(Buffer.from(array));
+
+      // 2. Generar code challenge
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+      // 3. Guardar code_verifier en una cookie HTTP-only
+      await fetch('/api/auth/mercadolibre/store-verifier', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codeVerifier }),
+      });
+
+      // 4. Obtener configuración de ML
+      const appId = process.env.NEXT_PUBLIC_MERCADOLIBRE_APP_ID;
+      const redirectUri = process.env.NEXT_PUBLIC_MERCADOLIBRE_REDIRECT_URI;
+
+      if (!appId || !redirectUri) {
+        notify('Error: MercadoLibre no está configurado');
+        return;
+      }
+
+      // 5. Construir URL de autorización
+      const authUrl = new URL('https://auth.mercadolibre.com.ar/authorization');
+      authUrl.searchParams.set('response_type', 'code');
+      authUrl.searchParams.set('client_id', appId);
+      authUrl.searchParams.set('redirect_uri', redirectUri);
+      authUrl.searchParams.set('code_challenge', codeChallenge);
+      authUrl.searchParams.set('code_challenge_method', 'S256');
+
+      // 6. Redirigir a MercadoLibre
+      window.location.href = authUrl.toString();
+    } catch (error) {
+      console.error('Error iniciando conexión a MercadoLibre:', error);
+      notify('Error iniciando conexión');
+    }
   }
 
   if (loading) {

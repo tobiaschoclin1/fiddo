@@ -32,17 +32,20 @@ export async function GET(request: Request) {
   });
   // --- FIN DEL LOG MEJORADO ---
 
+  // Obtener la URL base desde las variables de entorno
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
   // Validaciones iniciales con error específico
   if (!code) {
-    return NextResponse.redirect('https://91b5b6ebefb3.ngrok-free.app/dashboard?error=MissingCode');
+    return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingCode`);
   }
 
   if (!sessionToken) {
-    return NextResponse.redirect('https://91b5b6ebefb3.ngrok-free.app/dashboard?error=MissingSession');
+    return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingSession`);
   }
 
   if (!codeVerifier) {
-    return NextResponse.redirect('https://91b5b6ebefb3.ngrok-free.app/dashboard?error=MissingVerifier');
+    return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingVerifier`);
   }
 
   try {
@@ -79,7 +82,7 @@ export async function GET(request: Request) {
 
     if (existingMLUser && existingMLUser.id !== userId) {
       console.log('⚠️ Esta cuenta de MercadoLibre ya está conectada a otro usuario:', existingMLUser.email);
-      return NextResponse.redirect('https://91b5b6ebefb3.ngrok-free.app/dashboard?error=MLAccountAlreadyLinked');
+      return NextResponse.redirect(`${baseUrl}/dashboard?error=MLAccountAlreadyLinked`);
     }
 
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
@@ -96,16 +99,16 @@ export async function GET(request: Request) {
 
     console.log('✅ Tokens de MercadoLibre guardados para el usuario:', userId);
 
-    const response = NextResponse.redirect('https://91b5b6ebefb3.ngrok-free.app/dashboard?success=true');
-    response.cookies.set('pkce_code_verifier', '', { 
-      maxAge: 0, 
-      path: '/' 
+    const response = NextResponse.redirect(`${baseUrl}/dashboard?success=true`);
+    response.cookies.set('pkce_code_verifier', '', {
+      maxAge: 0,
+      path: '/'
     });
     return response;
 
   } catch (error) {
     console.error('Error en el callback de Mercado Libre:', error);
-    return NextResponse.redirect('https://91b5b6ebefb3.ngrok-free.app/dashboard?error=TokenError');
+    return NextResponse.redirect(`${baseUrl}/dashboard?error=TokenError`);
   } finally {
     await prisma.$disconnect();
   }
