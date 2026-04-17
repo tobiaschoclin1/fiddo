@@ -46,7 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Logo */}
         <div className="p-6 border-b border-slate-700/50">
           <div className="flex items-center gap-3">
-            <img src="/brand/Fiddo.JPG" alt="Fiddo" className="h-10 w-10 rounded-lg" />
+            <img src="/brand/fiddo_new_logo.png" alt="Fiddo" className="h-10 w-auto" />
             {isSidebarOpen && (
               <div>
                 <h1 className="font-bold text-xl">

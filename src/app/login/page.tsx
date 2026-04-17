@@ -43,7 +43,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
       <div className="w-full max-w-md space-y-8 rounded-2xl bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 p-8 shadow-2xl">
         <div className="text-center flex flex-col items-center">
-          <img src="/brand/Fiddo.JPG" alt="Fiddo" className="h-16 w-16 rounded-xl mb-4" />
+          <img src="/brand/fiddo_new_logo.png" alt="Fiddo" className="h-20 w-auto mb-4" />
           <h1 className="font-bold text-3xl mb-2">
             <span className="text-fiddo-blue">F</span>
             <span className="text-fiddo-orange">i</span>

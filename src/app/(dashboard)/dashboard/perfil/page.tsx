@@ -147,7 +147,24 @@ export default function PerfilPage() {
             </div>
 
             {userProfile?.mercadolibre.connected ? (
-              <button className="px-4 py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition">
+              <button
+                onClick={async () => {
+                  if (confirm('¿Estás seguro de que deseas desconectar tu cuenta de MercadoLibre?')) {
+                    try {
+                      const res = await fetch('/api/auth/mercadolibre/disconnect', { method: 'POST' });
+                      if (res.ok) {
+                        notify('✅ Cuenta de MercadoLibre desconectada');
+                        window.location.reload();
+                      } else {
+                        notify('❌ Error al desconectar');
+                      }
+                    } catch {
+                      notify('❌ Error al desconectar');
+                    }
+                  }
+                }}
+                className="px-4 py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition"
+              >
                 Desconectar
               </button>
             ) : (
