@@ -6,6 +6,9 @@ import { jwtVerify } from 'jose';
 const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
+  // Obtener la URL base desde las variables de entorno
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const cookieStore = await cookies();
@@ -15,40 +18,43 @@ export async function GET(request: Request) {
   // --- LOG DE DEBUGGING MEJORADO ---
   console.log('🔍 CALLBACK MERCADOLIBRE - URL completa:', request.url);
   console.log('🔍 CALLBACK MERCADOLIBRE - Variables de entorno:');
+  console.log('  - MERCADOLIBRE_APP_ID:', process.env.MERCADOLIBRE_APP_ID);
   console.log('  - MERCADOLIBRE_REDIRECT_URI:', process.env.MERCADOLIBRE_REDIRECT_URI);
-  console.log('  - NEXT_PUBLIC_MERCADOLIBRE_REDIRECT_URI:', process.env.NEXT_PUBLIC_MERCADOLIBRE_REDIRECT_URI);
-  
+  console.log('  - NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL);
+
   console.log('🍪 Todas las cookies disponibles:');
   cookieStore.getAll().forEach(cookie => {
-    console.log(`  ${cookie.name}: ${cookie.value}`);
+    console.log(`  ${cookie.name}: ${cookie.value.substring(0, 20)}...`);
   });
-  
+
   console.log('📝 Verificando parámetros en el callback:', {
     hasCode: !!code,
     hasCodeVerifier: !!codeVerifier,
     hasSessionToken: !!sessionToken,
-    codeValue: code,
-    codeVerifierValue: codeVerifier,
+    codeLength: code?.length,
+    codeVerifierLength: codeVerifier?.length,
   });
   // --- FIN DEL LOG MEJORADO ---
 
-  // Obtener la URL base desde las variables de entorno
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
   // Validaciones iniciales con error específico
   if (!code) {
+    console.error('❌ Falta código de autorización');
     return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingCode`);
   }
 
   if (!sessionToken) {
+    console.error('❌ Falta sesión del usuario');
     return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingSession`);
   }
 
   if (!codeVerifier) {
+    console.error('❌ Falta code verifier PKCE');
     return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingVerifier`);
   }
 
   try {
+    console.log('🔄 Intentando obtener token de MercadoLibre...');
+
     const tokenResponse = await fetch('https://api.mercadolibre.com/oauth/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
@@ -64,8 +70,16 @@ export async function GET(request: Request) {
 
     if (!tokenResponse.ok) {
       const errorDetails = await tokenResponse.json();
-      console.error('DETALLES DEL ERROR DE MERCADO LIBRE:', errorDetails);
-      throw new Error('Error al obtener el token de Mercado Libre');
+      console.error('❌ ERROR DE MERCADO LIBRE:', JSON.stringify(errorDetails, null, 2));
+      console.error('Status:', tokenResponse.status);
+      console.error('Parámetros enviados:', {
+        grant_type: 'authorization_code',
+        client_id: process.env.MERCADOLIBRE_APP_ID,
+        redirect_uri: process.env.MERCADOLIBRE_REDIRECT_URI,
+        code_length: code?.length,
+        code_verifier_length: codeVerifier?.length,
+      });
+      return NextResponse.redirect(`${baseUrl}/dashboard?error=TokenError&details=${encodeURIComponent(errorDetails.message || 'Unknown')}`);
     }
 
     const tokens = await tokenResponse.json();
