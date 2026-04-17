@@ -20,14 +20,14 @@ export default function ConfiguracionPage() {
     <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
       <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
-        <h1 className="text-3xl font-bold text-white">⚙️ Configuración</h1>
+        <h1 className="text-3xl font-bold text-white">Configuración</h1>
         <p className="text-slate-400 mt-1">Personaliza tu experiencia</p>
       </header>
 
       <div className="p-8 max-w-4xl space-y-6">
         {/* Notificaciones */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4">🔔 Notificaciones</h2>
+          <h2 className="text-xl font-bold text-white mb-4">Notificaciones</h2>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
@@ -66,7 +66,7 @@ export default function ConfiguracionPage() {
 
         {/* Apariencia */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4">🎨 Apariencia</h2>
+          <h2 className="text-xl font-bold text-white mb-4">Apariencia</h2>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
