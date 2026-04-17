@@ -1,459 +1,221 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/Toast";
-import Modal from "@/components/ui/Modal";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 
-// --- Funciones para PKCE ---
-function base64URLEncode(str: Buffer) {
-  return str.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-}
-async function generateCodeChallenge(verifier: string) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const digest = await window.crypto.subtle.digest("SHA-256", data);
-  return base64URLEncode(Buffer.from(digest));
+interface Stats {
+  totalProducts: number;
+  totalCustomers: number;
+  totalOrders: number;
+  revenue: number;
 }
 
 interface UserProfile {
-  user: { id: string; name: string; email: string; createdAt: string };
+  user: { id: string; name: string; email: string };
   mercadolibre: {
     connected: boolean;
-    userId?: string;
-    expiresAt?: string;
     profile?: {
       nickname: string;
       first_name: string;
       last_name: string;
-      email: string;
-      permalink: string;
     };
   };
 }
-interface Customer {
-  id: string;
-  mercadolibreId: string;
-  nickname: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  purchaseCount: number;
-  lastOrderId?: string | null;
-  lastShippingMethod?: string | null;
-  province?: string | null;
-}
-interface MLProduct {
-  id: string;
-  title: string;
-  price: number;
-  thumbnail: string;
-  available_quantity: number;
-}
 
-export default function DashboardPage() {
-  // Paginación productos
-  const PRODUCTS_PER_PAGE = 10;
-  const [productsPage] = useState(1);
-  // Paginación compradores
-  const CUSTOMERS_PER_PAGE = 20;
-  const [customersPage, setCustomersPage] = useState(1);
+export default function NewDashboardPage() {
   const router = useRouter();
   const { notify } = useToast();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [stats, setStats] = useState<Stats>({
+    totalProducts: 0,
+    totalCustomers: 0,
+    totalOrders: 0,
+    revenue: 0,
+  });
   const [loading, setLoading] = useState(true);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [customersLoading, setCustomersLoading] = useState(true);
-  const [purchaseFilter, setPurchaseFilter] = useState("");
-  const [provinceFilter, setProvinceFilter] = useState("");
-  const [availableProvinces, setAvailableProvinces] = useState<string[]>([]);
-  const [products, setProducts] = useState<MLProduct[]>([]);
-  const [productsLoading, setProductsLoading] = useState(true);
-  const [promotionData, setPromotionData] = useState<Record<string, { link: string; promotionId: string; expiresAt: string }>>({});
-  const [messageModal, setMessageModal] = useState<{ open: boolean; customer?: Customer; text: string }>({ open: false, text: "" });
-  const [bulkModal, setBulkModal] = useState<{ open: boolean; text: string }>({ open: false, text: "" });
-  const [promotionModal, setPromotionModal] = useState<{ open: boolean; productId?: string; discount: string; days: string }>({ open: false, discount: "", days: "" });
-  const [disconnectModal, setDisconnectModal] = useState(false);
-  // MercadoLibre
-  const mlAppId = process.env.NEXT_PUBLIC_MERCADOLIBRE_APP_ID;
-  const mlRedirectUri = process.env.NEXT_PUBLIC_MERCADOLIBRE_REDIRECT_URI;
 
-  const filteredCustomers = useMemo(() => {
-    return customers.filter((c) => {
-      let match = true;
-      if (purchaseFilter === "1") match = match && c.purchaseCount === 1;
-      else if (purchaseFilter === "1-5") match = match && c.purchaseCount > 1 && c.purchaseCount <= 5;
-      else if (purchaseFilter === "5-10") match = match && c.purchaseCount > 5 && c.purchaseCount <= 10;
-      else if (purchaseFilter === "10+") match = match && c.purchaseCount > 10;
-      if (provinceFilter) match = match && c.province === provinceFilter;
-      return match;
-    });
-  }, [customers, purchaseFilter, provinceFilter]);
-
-  // 1. CARGA DE PERFIL REAL desde la API
   useEffect(() => {
-    async function loadProfile() {
+    async function loadData() {
       try {
         const res = await fetch('/api/user/profile');
-        if (!res.ok) {
-          throw new Error('Error cargando perfil');
-        }
+        if (!res.ok) throw new Error('Error cargando perfil');
         const data = await res.json();
         setUserProfile(data);
+
+        // Simular stats por ahora
+        setStats({
+          totalProducts: 0,
+          totalCustomers: 0,
+          totalOrders: 0,
+          revenue: 0,
+        });
       } catch (error) {
         console.error('Error:', error);
-        notify('Error cargando perfil');
-        router.push('/login');
+        notify('Error cargando datos');
       } finally {
         setLoading(false);
       }
     }
-    loadProfile();
-  }, [notify, router]);
-
-  // 2. CARGA DE COMPRADORES REAL desde la API
-  useEffect(() => {
-    async function loadCustomers() {
-      setCustomersLoading(true);
-      try {
-        const res = await fetch('/api/customers');
-        if (res.ok) {
-          const data = await res.json();
-          setCustomers(data.customers || []);
-          const provinces = [...new Set(data.customers?.map((c: Customer) => c.province).filter(Boolean))];
-          setAvailableProvinces(provinces as string[]);
-        } else {
-          setCustomers([]);
-        }
-      } catch (error) {
-        console.error('Error cargando clientes:', error);
-        setCustomers([]);
-      } finally {
-        setCustomersLoading(false);
-      }
-    }
-    loadCustomers();
-  }, [customersPage]);
-
-  // 3. CARGA DE PRODUCTOS REAL desde MercadoLibre
-  useEffect(() => {
-    async function loadProducts() {
-      setProductsLoading(true);
-      try {
-        const res = await fetch('/api/products');
-        if (res.ok) {
-          const data = await res.json();
-          setProducts(data.products || []);
-        } else {
-          setProducts([]);
-        }
-      } catch (error) {
-        console.error('Error cargando productos:', error);
-        setProducts([]);
-      } finally {
-        setProductsLoading(false);
-      }
-    }
-    loadProducts();
-  }, [productsPage]);
-
-  // Handlers para los modales y acciones
-  const handleSendMessage = async () => {
-    if (!messageModal.customer || !messageModal.text) return;
-    notify("✅ Mensaje enviado a " + messageModal.customer.nickname);
-    setMessageModal({ open: false, customer: undefined, text: "" });
-  };
-
-  const handleSendBulk = async () => {
-    if (!bulkModal.text) return;
-    notify("✅ Mensajes masivos enviados correctamente");
-    setBulkModal({ open: false, text: "" });
-  };
-
-  const handleApplyPromotion = async () => {
-    notify("✅ Promoción aplicada con éxito");
-    setPromotionModal({ open: false, productId: undefined, discount: "", days: "" });
-  };
-
-  const handleCopyLink = (link: string) => {
-    navigator.clipboard.writeText(link);
-    notify("Link copiado");
-  };
-
-  const handleLogout = async () => {
-    router.push("/login");
-  };
-
-  async function handleMercadoLibreConnect() {
-    try {
-      // 1. Generar code verifier aleatorio (PKCE)
-      const array = new Uint8Array(32);
-      window.crypto.getRandomValues(array);
-      const codeVerifier = base64URLEncode(Buffer.from(array));
-
-      // 2. Generar code challenge
-      const codeChallenge = await generateCodeChallenge(codeVerifier);
-
-      // 3. Guardar code_verifier en una cookie HTTP-only
-      await fetch('/api/auth/mercadolibre/store-verifier', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ codeVerifier }),
-      });
-
-      // 4. Obtener configuración de ML
-      const appId = process.env.NEXT_PUBLIC_MERCADOLIBRE_APP_ID;
-      const redirectUri = process.env.NEXT_PUBLIC_MERCADOLIBRE_REDIRECT_URI;
-
-      if (!appId || !redirectUri) {
-        notify('Error: MercadoLibre no está configurado');
-        return;
-      }
-
-      // 5. Construir URL de autorización
-      const authUrl = new URL('https://auth.mercadolibre.com.ar/authorization');
-      authUrl.searchParams.set('response_type', 'code');
-      authUrl.searchParams.set('client_id', appId);
-      authUrl.searchParams.set('redirect_uri', redirectUri);
-      authUrl.searchParams.set('code_challenge', codeChallenge);
-      authUrl.searchParams.set('code_challenge_method', 'S256');
-
-      // 6. Redirigir a MercadoLibre
-      window.location.href = authUrl.toString();
-    } catch (error) {
-      console.error('Error iniciando conexión a MercadoLibre:', error);
-      notify('Error iniciando conexión');
-    }
-  }
+    loadData();
+  }, [notify]);
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+      <div className="flex items-center justify-center h-screen bg-slate-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fiddo-blue mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando dashboard...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-fiddo-orange mx-auto"></div>
+          <p className="mt-4 text-slate-300">Cargando dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div>
-      {/* Modales */}
-      <Modal
-        title="Enviar mensaje"
-        open={messageModal.open}
-        onClose={() => setMessageModal({ open: false, customer: undefined, text: "" })}
-        onConfirm={handleSendMessage}
-        confirmText="Enviar"
-      >
-        <textarea
-          className="w-full border rounded-xl p-2 mt-2"
-          rows={4}
-          value={messageModal.text}
-          onChange={e => setMessageModal(m => ({ ...m, text: e.target.value }))}
-          placeholder="Escribe el mensaje individual..."
-        />
-      </Modal>
+    <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Header */}
+      <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">
+              ¡Hola, {userProfile?.user.name?.split(' ')[0] || 'Usuario'}! 👋
+            </h1>
+            <p className="text-slate-400 mt-1">Aquí está tu resumen de hoy</p>
+          </div>
 
-      <Modal
-        title="Enviar mensaje masivo"
-        open={bulkModal.open}
-        onClose={() => setBulkModal({ open: false, text: "" })}
-        onConfirm={handleSendBulk}
-        confirmText="Enviar"
-      >
-        <textarea
-          className="w-full border rounded-xl p-2 mt-2"
-          rows={4}
-          value={bulkModal.text}
-          onChange={e => setBulkModal(m => ({ ...m, text: e.target.value }))}
-          placeholder="Mensaje para todos los compradores filtrados..."
-        />
-      </Modal>
-
-      <Modal
-        title="Aplicar promoción"
-        open={promotionModal.open}
-        onClose={() => setPromotionModal({ open: false, productId: undefined, discount: "", days: "" })}
-        onConfirm={handleApplyPromotion}
-        confirmText="Aplicar"
-      >
-        <div className="flex flex-col gap-2">
-          <input
-            className="border rounded-xl p-2"
-            type="number"
-            placeholder="Descuento (%)"
-            value={promotionModal.discount}
-            onChange={e => setPromotionModal(m => ({ ...m, discount: e.target.value }))}
-          />
-          <input
-            className="border rounded-xl p-2"
-            type="number"
-            placeholder="Días de duración"
-            value={promotionModal.days}
-            onChange={e => setPromotionModal(m => ({ ...m, days: e.target.value }))}
-          />
+          <div className="flex items-center gap-4">
+            <button className="px-4 py-2 bg-slate-700/50 hover:bg-slate-700 text-white rounded-lg transition">
+              📅 Hoy
+            </button>
+          </div>
         </div>
-      </Modal>
+      </header>
 
-      {/* Dashboard principal */}
-      <div className="min-h-screen bg-fiddo-blue/10 py-8">
-        <div className="max-w-4xl mx-auto px-4">
-          {/* Header del Dashboard */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <img src="/brand/Fiddo.JPG" alt="Fiddo Logo" style={{height: 48, width: 'auto', maxWidth: 80}} />
-                <div>
-                  <span className="font-bold text-2xl text-fiddo-blue">F</span><span className="font-bold text-2xl text-fiddo-orange">i</span><span className="font-bold text-2xl text-fiddo-turquoise">ddo</span>
-                  <p className="text-gray-600 mt-1">¡Bienvenido, {userProfile?.user.name}!</p>
-                </div>
+      {/* Main Content */}
+      <div className="p-8 space-y-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Total Products */}
+          <div className="bg-gradient-to-br from-fiddo-blue to-fiddo-blue-dark p-6 rounded-2xl shadow-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-200 text-sm font-medium">Productos</p>
+                <h3 className="text-4xl font-bold text-white mt-2">{stats.totalProducts}</h3>
+                <p className="text-blue-200 text-xs mt-2">📦 En catálogo</p>
               </div>
-              <button
-                onClick={handleLogout}
-                className="rounded-md bg-fiddo-orange px-4 py-2 font-semibold text-white transition-colors hover:bg-fiddo-turquoise"
-              >
-                Cerrar Sesión
-              </button>
+              <div className="h-16 w-16 bg-white/10 rounded-full flex items-center justify-center">
+                <span className="text-3xl">📦</span>
+              </div>
             </div>
           </div>
 
-          {/* Integraciones */}
-          <div className="grid grid-cols-1 gap-6 mb-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">MercadoLibre</h2>
-              <div className="space-y-3">
-                {/* Estado de conexión real */}
+          {/* Total Customers */}
+          <div className="bg-gradient-to-br from-fiddo-turquoise to-fiddo-turquoise-dark p-6 rounded-2xl shadow-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-teal-200 text-sm font-medium">Clientes</p>
+                <h3 className="text-4xl font-bold text-white mt-2">{stats.totalCustomers}</h3>
+                <p className="text-teal-200 text-xs mt-2">👥 Total</p>
+              </div>
+              <div className="h-16 w-16 bg-white/10 rounded-full flex items-center justify-center">
+                <span className="text-3xl">👥</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Orders */}
+          <div className="bg-gradient-to-br from-fiddo-orange to-fiddo-orange-dark p-6 rounded-2xl shadow-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-orange-200 text-sm font-medium">Ventas</p>
+                <h3 className="text-4xl font-bold text-white mt-2">{stats.totalOrders}</h3>
+                <p className="text-orange-200 text-xs mt-2">🛒 Este mes</p>
+              </div>
+              <div className="h-16 w-16 bg-white/10 rounded-full flex items-center justify-center">
+                <span className="text-3xl">🛒</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Revenue */}
+          <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-2xl shadow-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-200 text-sm font-medium">Ingresos</p>
+                <h3 className="text-4xl font-bold text-white mt-2">${stats.revenue.toLocaleString()}</h3>
+                <p className="text-purple-200 text-xs mt-2">💰 Este mes</p>
+              </div>
+              <div className="h-16 w-16 bg-white/10 rounded-full flex items-center justify-center">
+                <span className="text-3xl">💰</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* MercadoLibre Status */}
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+          <h2 className="text-xl font-bold text-white mb-4">🏪 Integraciones</h2>
+
+          <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 bg-yellow-400 rounded-lg flex items-center justify-center">
+                <span className="font-bold text-yellow-900">ML</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">MercadoLibre</h3>
                 {userProfile?.mercadolibre.connected ? (
-                  <>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                      <span className="text-green-700 font-medium">Conectado</span>
-                    </div>
-                    {userProfile.mercadolibre.profile && (
-                      <>
-                        <div>
-                          <span className="text-gray-600">Usuario:</span>
-                          <span className="ml-2 font-medium">{userProfile.mercadolibre.profile.nickname}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Nombre:</span>
-                          <span className="ml-2 font-medium">
-                            {userProfile.mercadolibre.profile.first_name} {userProfile.mercadolibre.profile.last_name}
-                          </span>
-                        </div>
-                      </>
-                    )}
-                    <button className="w-full rounded-md bg-fiddo-orange/20 px-4 py-2 font-medium text-fiddo-orange">
-                      Cuenta verificada
-                    </button>
-                  </>
+                  <p className="text-sm text-green-400">✓ Conectado como {userProfile.mercadolibre.profile?.nickname}</p>
                 ) : (
-                  <>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                      <span className="text-red-700 font-medium">No conectado</span>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Conecta tu cuenta de MercadoLibre para ver tus productos y clientes.
-                    </p>
-                    <button
-                      onClick={handleMercadoLibreConnect}
-                      className="w-full rounded-md bg-fiddo-blue px-4 py-2 font-medium text-white hover:bg-fiddo-turquoise transition"
-                    >
-                      Conectar MercadoLibre
-                    </button>
-                  </>
+                  <p className="text-sm text-slate-400">No conectado</p>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Listado de compradores */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Compradores</h2>
-            <div className="flex flex-wrap items-center mb-4 gap-4">
-              <div className="flex items-center text-sm">
-                <label className="mr-2 text-gray-700">Filtro compras:</label>
-                <select className="border rounded px-2 py-1">
-                  <option>Todas</option>
-                  <option>Recurrentes</option>
-                </select>
-              </div>
+            {!userProfile?.mercadolibre.connected && (
               <button
-                onClick={() => setBulkModal({ open: true, text: "" })}
-                className="ml-auto rounded bg-fiddo-blue px-3 py-1 text-sm font-medium text-white hover:bg-fiddo-turquoise"
+                onClick={() => router.push('/dashboard/configuracion')}
+                className="px-6 py-2 bg-gradient-to-r from-fiddo-orange to-fiddo-orange-light text-white rounded-lg hover:shadow-lg transition"
               >
-                Enviar mensaje masivo
+                Conectar
               </button>
-            </div>
-            
-            {customersLoading ? (
-              <p className="text-gray-600">Cargando compradores...</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Nickname</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Nombre</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Provincia</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Compras</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {customers.map((customer) => (
-                      <tr key={customer.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{customer.nickname}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{customer.firstName} {customer.lastName}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{customer.province}</td>
-                        <td className="px-4 py-3 text-sm font-bold text-fiddo-blue">{customer.purchaseCount}</td>
-                        <td className="px-4 py-3">
-                          <button
-                            className="rounded bg-fiddo-blue px-3 py-1 text-white text-xs hover:bg-fiddo-turquoise transition"
-                            onClick={() => setMessageModal({ open: true, customer, text: '' })}
-                          >
-                            Mensaje
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
             )}
           </div>
+        </div>
 
-          {/* Listado de productos */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Productos en Catálogo</h2>
-            {productsLoading ? (
-              <p className="text-gray-600">Cargando productos...</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {products.map((product) => (
-                  <div key={product.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition bg-white flex flex-col">
-                    <div className="w-full h-32 flex items-center justify-center p-2">
-                      <img src={product.thumbnail} alt={product.title} className="max-w-full max-h-full object-contain" />
-                    </div>
-                    <div className="p-3 flex flex-col flex-grow bg-neutral-50 border-t">
-                      <div className="text-xs font-bold text-gray-800 line-clamp-2 min-h-[32px]">{product.title}</div>
-                      <div className="text-fiddo-blue font-black text-base my-1">${product.price.toLocaleString()}</div>
-                      <div className="text-[10px] text-gray-500 mb-3">Disponibles: {product.available_quantity}</div>
-                      <button
-                        onClick={() => setPromotionModal({ open: true, productId: product.id, discount: '', days: '' })}
-                        className="rounded-full bg-fiddo-orange py-1 text-[10px] font-bold text-white hover:bg-fiddo-turquoise transition mt-auto"
-                      >
-                        Crear Promoción
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <button
+            onClick={() => router.push('/dashboard/productos')}
+            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-700/50 transition text-left group"
+          >
+            <div className="h-12 w-12 bg-fiddo-blue/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+              <span className="text-2xl">📦</span>
+            </div>
+            <h3 className="font-bold text-white text-lg">Gestionar Productos</h3>
+            <p className="text-slate-400 text-sm mt-2">Ver y editar tu catálogo</p>
+          </button>
+
+          <button
+            onClick={() => router.push('/dashboard/clientes')}
+            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-700/50 transition text-left group"
+          >
+            <div className="h-12 w-12 bg-fiddo-turquoise/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+              <span className="text-2xl">👥</span>
+            </div>
+            <h3 className="font-bold text-white text-lg">Ver Clientes</h3>
+            <p className="text-slate-400 text-sm mt-2">Gestiona tus compradores</p>
+          </button>
+
+          <button
+            onClick={() => router.push('/dashboard/promociones')}
+            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-700/50 transition text-left group"
+          >
+            <div className="h-12 w-12 bg-fiddo-orange/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+              <span className="text-2xl">🎯</span>
+            </div>
+            <h3 className="font-bold text-white text-lg">Crear Promoción</h3>
+            <p className="text-slate-400 text-sm mt-2">Impulsa tus ventas</p>
+          </button>
         </div>
       </div>
     </div>

@@ -10,9 +10,21 @@ const config: Config = {
     extend: {
       colors: {
         fiddo: {
-          blue: '#1e40af',
-          orange: '#f97316',
-          turquoise: '#14b8a6',
+          blue: {
+            DEFAULT: '#004E89',
+            light: '#006BA6',
+            dark: '#003D6B',
+          },
+          orange: {
+            DEFAULT: '#FF6B35',
+            light: '#FF8C61',
+            dark: '#E04F1F',
+          },
+          turquoise: {
+            DEFAULT: '#1FB3B3',
+            light: '#4BC5C5',
+            dark: '#178F8F',
+          },
         },
       },
     },
