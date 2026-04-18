@@ -10,11 +10,20 @@ interface UserProfile {
   };
 }
 
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  thumbnail?: string;
+  available_quantity: number;
+  status: string;
+}
+
 export default function ProductosPage() {
   const { notify } = useToast();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     async function loadData() {

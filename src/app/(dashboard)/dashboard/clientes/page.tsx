@@ -10,11 +10,19 @@ interface UserProfile {
   };
 }
 
+interface Customer {
+  id: string;
+  name?: string;
+  email?: string;
+  orders_count?: number;
+  total_spent?: number;
+}
+
 export default function ClientesPage() {
   const { notify } = useToast();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
 
   useEffect(() => {
     async function loadData() {
