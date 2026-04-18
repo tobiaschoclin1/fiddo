@@ -4,11 +4,13 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { language, setLanguage, t } = useLanguage();
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -114,7 +116,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto relative">
+        {/* Language Toggle - Fixed Position */}
+        <div className="fixed top-6 right-6 z-40">
+          <div className="bg-slate-800/70 backdrop-blur-md border border-slate-700/50 rounded-xl p-1 flex gap-1 shadow-xl">
+            <button
+              onClick={() => setLanguage('es')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                language === 'es'
+                  ? 'bg-gradient-to-r from-fiddo-orange to-fiddo-turquoise text-white shadow-lg'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+              }`}
+            >
+              ES
+            </button>
+            <button
+              onClick={() => setLanguage('en')}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                language === 'en'
+                  ? 'bg-gradient-to-r from-fiddo-orange to-fiddo-turquoise text-white shadow-lg'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+              }`}
+            >
+              EN
+            </button>
+          </div>
+        </div>
+
         <div className="h-full">{children}</div>
       </main>
     </div>

@@ -2,8 +2,9 @@
 
 import { createContext, useContext, useMemo, useState, ReactNode } from "react";
 
-type Toast = { id: number; title?: string; message: string };
-type ToastContext = { notify: (message: string, title?: string) => void };
+type ToastType = 'success' | 'error' | 'info' | 'warning';
+type Toast = { id: number; message: string; type: ToastType };
+type ToastContext = { notify: (message: string, type?: ToastType) => void };
 
 const ToastCtx = createContext<ToastContext | null>(null);
 
@@ -15,20 +16,68 @@ export function useToast() {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<Toast[]>([]);
-  const notify = (message: string, title?: string) => {
+
+  const notify = (message: string, type: ToastType = 'info') => {
     const id = Date.now();
-    setItems((prev) => [...prev, { id, title, message }]);
-    setTimeout(() => setItems((prev) => prev.filter(t => t.id !== id)), 3500);
+    setItems((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => setItems((prev) => prev.filter(t => t.id !== id)), 4000);
   };
+
   const value = useMemo(() => ({ notify }), []);
+
+  const getIcon = (type: ToastType) => {
+    switch (type) {
+      case 'success':
+        return (
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        );
+      case 'error':
+        return (
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        );
+      case 'warning':
+        return (
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        );
+      default:
+        return (
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+    }
+  };
+
+  const getColors = (type: ToastType) => {
+    switch (type) {
+      case 'success':
+        return 'bg-gradient-to-r from-green-600 to-green-500 border-green-400';
+      case 'error':
+        return 'bg-gradient-to-r from-red-600 to-red-500 border-red-400';
+      case 'warning':
+        return 'bg-gradient-to-r from-yellow-600 to-yellow-500 border-yellow-400';
+      default:
+        return 'bg-gradient-to-r from-fiddo-blue to-fiddo-turquoise border-fiddo-turquoise';
+    }
+  };
+
   return (
     <ToastCtx.Provider value={value}>
       {children}
-      <div className="fixed right-4 bottom-4 space-y-2 z-50">
-        {items.map(t => (
-          <div key={t.id} className="rounded-2xl shadow-lg px-4 py-3 bg-fiddo-orange text-white">
-            {t.title && <div className="font-semibold">{t.title}</div>}
-            <div className="text-sm">{t.message}</div>
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+        {items.map((toast) => (
+          <div
+            key={toast.id}
+            className={`${getColors(toast.type)} backdrop-blur-sm border text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 min-w-[300px] animate-slide-up`}
+          >
+            <div className="flex-shrink-0">{getIcon(toast.type)}</div>
+            <p className="font-medium">{toast.message}</p>
           </div>
         ))}
       </div>

@@ -35,14 +35,21 @@ export default function ProductosPage() {
 
         // Si está conectado, intentar cargar productos
         if (data.mercadolibre.connected) {
-          try {
-            const productsRes = await fetch('/api/products');
-            if (productsRes.ok) {
-              const productsData = await productsRes.json();
-              setProducts(productsData.products || []);
+          // Primero intentar cargar datos de prueba del localStorage
+          const testProducts = localStorage.getItem('test_products');
+          if (testProducts) {
+            setProducts(JSON.parse(testProducts));
+          } else {
+            // Si no hay datos de prueba, intentar cargar de la API real
+            try {
+              const productsRes = await fetch('/api/products');
+              if (productsRes.ok) {
+                const productsData = await productsRes.json();
+                setProducts(productsData.products || []);
+              }
+            } catch (error) {
+              console.error('Error cargando productos:', error);
             }
-          } catch (error) {
-            console.error('Error cargando productos:', error);
           }
         }
       } catch (error) {

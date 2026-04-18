@@ -175,6 +175,42 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Test Data - only show if connected */}
+        {isConnected && (
+          <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-2">Datos de prueba</h2>
+                <p className="text-slate-400 text-sm">Inserta productos, ventas y clientes de ejemplo para probar el sistema</p>
+              </div>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch('/api/test-data/insert', { method: 'POST' });
+                    const data = await res.json();
+                    if (res.ok) {
+                      // Guardar en localStorage
+                      localStorage.setItem('test_products', JSON.stringify(data.data.products));
+                      localStorage.setItem('test_customers', JSON.stringify(data.data.customers));
+                      localStorage.setItem('test_orders', JSON.stringify(data.data.orders));
+                      notify('Datos de prueba insertados correctamente');
+                      window.location.reload();
+                    } else {
+                      notify(data.error || 'Error insertando datos');
+                    }
+                  } catch (error) {
+                    console.error('Error:', error);
+                    notify('Error insertando datos de prueba');
+                  }
+                }}
+                className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg hover:shadow-lg transition shrink-0 ml-4"
+              >
+                Insertar datos
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Quick Actions - only show if connected */}
         {isConnected && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

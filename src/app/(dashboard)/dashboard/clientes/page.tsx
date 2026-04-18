@@ -34,14 +34,21 @@ export default function ClientesPage() {
 
         // Si está conectado, intentar cargar clientes
         if (data.mercadolibre.connected) {
-          try {
-            const customersRes = await fetch('/api/customers');
-            if (customersRes.ok) {
-              const customersData = await customersRes.json();
-              setCustomers(customersData.customers || []);
+          // Primero intentar cargar datos de prueba del localStorage
+          const testCustomers = localStorage.getItem('test_customers');
+          if (testCustomers) {
+            setCustomers(JSON.parse(testCustomers));
+          } else {
+            // Si no hay datos de prueba, intentar cargar de la API real
+            try {
+              const customersRes = await fetch('/api/customers');
+              if (customersRes.ok) {
+                const customersData = await customersRes.json();
+                setCustomers(customersData.customers || []);
+              }
+            } catch (error) {
+              console.error('Error cargando clientes:', error);
             }
-          } catch (error) {
-            console.error('Error cargando clientes:', error);
           }
         }
       } catch (error) {
