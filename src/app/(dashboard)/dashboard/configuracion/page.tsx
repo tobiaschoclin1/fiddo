@@ -13,7 +13,7 @@ export default function ConfiguracionPage() {
   });
 
   const handleSave = () => {
-    notify('✅ Configuración guardada');
+    notify('Configuración guardada', 'success');
   };
 
   return (

@@ -44,7 +44,7 @@ export default function PerfilPage() {
   }, [notify]);
 
   const handleSave = async () => {
-    notify('✅ Perfil actualizado correctamente');
+    notify('Perfil actualizado correctamente', 'success');
     setIsEditing(false);
   };
 
@@ -154,13 +154,13 @@ export default function PerfilPage() {
                     try {
                       const res = await fetch('/api/auth/mercadolibre/disconnect', { method: 'POST' });
                       if (res.ok) {
-                        notify('✅ Cuenta de MercadoLibre desconectada');
+                        notify('Cuenta de MercadoLibre desconectada', 'success');
                         window.location.reload();
                       } else {
-                        notify('❌ Error al desconectar');
+                        notify('Error al desconectar', 'error');
                       }
                     } catch {
-                      notify('❌ Error al desconectar');
+                      notify('Error al desconectar', 'error');
                     }
                   }
                 }}

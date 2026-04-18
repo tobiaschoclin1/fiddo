@@ -193,14 +193,14 @@ export default function DashboardPage() {
                       localStorage.setItem('test_products', JSON.stringify(data.data.products));
                       localStorage.setItem('test_customers', JSON.stringify(data.data.customers));
                       localStorage.setItem('test_orders', JSON.stringify(data.data.orders));
-                      notify('Datos de prueba insertados correctamente');
+                      notify('Datos de prueba insertados correctamente', 'success');
                       window.location.reload();
                     } else {
-                      notify(data.error || 'Error insertando datos');
+                      notify(data.error || 'Error insertando datos', 'error');
                     }
                   } catch (error) {
                     console.error('Error:', error);
-                    notify('Error insertando datos de prueba');
+                    notify('Error insertando datos de prueba', 'error');
                   }
                 }}
                 className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg hover:shadow-lg transition shrink-0 ml-4"
