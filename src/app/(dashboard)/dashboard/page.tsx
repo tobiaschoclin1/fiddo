@@ -82,9 +82,9 @@ export default function DashboardPage() {
       <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
         <div>
           <h1 className="text-3xl font-bold text-white">
-            Bienvenido, {userProfile?.user.name?.split(' ')[0] || 'Usuario'}
+            {t('welcome')}, {userProfile?.user.name?.split(' ')[0] || 'Usuario'}
           </h1>
-          <p className="text-slate-400 mt-1">Resumen de tu cuenta</p>
+          <p className="text-slate-400 mt-1">{t('accountSummary')}</p>
         </div>
       </header>
 
@@ -95,14 +95,14 @@ export default function DashboardPage() {
           <div className="bg-gradient-to-r from-yellow-600/20 to-yellow-500/20 border border-yellow-500/30 rounded-2xl p-6">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="text-xl font-bold text-yellow-200 mb-2">Conecta tu cuenta de MercadoLibre</h3>
-                <p className="text-yellow-100/80">Para comenzar a gestionar tus productos y clientes, conecta tu cuenta de MercadoLibre</p>
+                <h3 className="text-xl font-bold text-yellow-200 mb-2">{t('connectML')}</h3>
+                <p className="text-yellow-100/80">{t('connectMLDesc')}</p>
               </div>
               <button
                 onClick={initiateMLOAuth}
                 className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-semibold rounded-lg transition shrink-0 ml-4"
               >
-                Conectar ahora
+                {t('connectNow')}
               </button>
             </div>
           </div>
@@ -113,43 +113,43 @@ export default function DashboardPage() {
           {/* Total Products */}
           <div className="bg-gradient-to-br from-fiddo-blue to-fiddo-blue-dark p-6 rounded-2xl shadow-xl">
             <div>
-              <p className="text-blue-200 text-sm font-medium">Productos</p>
+              <p className="text-blue-200 text-sm font-medium">{t('products')}</p>
               <h3 className="text-4xl font-bold text-white mt-2">{stats.totalProducts}</h3>
-              <p className="text-blue-200/70 text-xs mt-2">En catálogo</p>
+              <p className="text-blue-200/70 text-xs mt-2">{t('inCatalog')}</p>
             </div>
           </div>
 
           {/* Total Customers */}
           <div className="bg-gradient-to-br from-fiddo-turquoise to-fiddo-turquoise-dark p-6 rounded-2xl shadow-xl">
             <div>
-              <p className="text-teal-200 text-sm font-medium">Clientes</p>
+              <p className="text-teal-200 text-sm font-medium">{t('customers')}</p>
               <h3 className="text-4xl font-bold text-white mt-2">{stats.totalCustomers}</h3>
-              <p className="text-teal-200/70 text-xs mt-2">Total</p>
+              <p className="text-teal-200/70 text-xs mt-2">{t('total')}</p>
             </div>
           </div>
 
           {/* Total Orders */}
           <div className="bg-gradient-to-br from-fiddo-orange to-fiddo-orange-dark p-6 rounded-2xl shadow-xl">
             <div>
-              <p className="text-orange-200 text-sm font-medium">Ventas</p>
+              <p className="text-orange-200 text-sm font-medium">{t('sales')}</p>
               <h3 className="text-4xl font-bold text-white mt-2">{stats.totalOrders}</h3>
-              <p className="text-orange-200/70 text-xs mt-2">Este mes</p>
+              <p className="text-orange-200/70 text-xs mt-2">{t('thisMonth')}</p>
             </div>
           </div>
 
           {/* Revenue */}
           <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-2xl shadow-xl">
             <div>
-              <p className="text-purple-200 text-sm font-medium">Ingresos</p>
+              <p className="text-purple-200 text-sm font-medium">{t('revenue')}</p>
               <h3 className="text-4xl font-bold text-white mt-2">${stats.revenue.toLocaleString()}</h3>
-              <p className="text-purple-200/70 text-xs mt-2">Este mes</p>
+              <p className="text-purple-200/70 text-xs mt-2">{t('thisMonth')}</p>
             </div>
           </div>
         </div>
 
         {/* Integration Status */}
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-4">Integraciones</h2>
+          <h2 className="text-xl font-bold text-white mb-4">{t('integrations')}</h2>
 
           <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
             <div className="flex items-center gap-4">
@@ -159,9 +159,9 @@ export default function DashboardPage() {
               <div>
                 <h3 className="font-semibold text-white">MercadoLibre</h3>
                 {isConnected ? (
-                  <p className="text-sm text-green-400">Conectado como {userProfile.mercadolibre.profile?.nickname}</p>
+                  <p className="text-sm text-green-400">{t('connected')} {userProfile.mercadolibre.profile?.nickname}</p>
                 ) : (
-                  <p className="text-sm text-slate-400">No conectado</p>
+                  <p className="text-sm text-slate-400">{t('notConnected')}</p>
                 )}
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                 onClick={initiateMLOAuth}
                 className="px-6 py-2 bg-gradient-to-r from-fiddo-orange to-fiddo-orange-light text-white rounded-lg hover:shadow-lg transition"
               >
-                Conectar
+                {t('connect')}
               </button>
             )}
           </div>
@@ -182,8 +182,8 @@ export default function DashboardPage() {
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white mb-2">Datos de prueba</h2>
-                <p className="text-slate-400 text-sm">Inserta o elimina productos, ventas y clientes de ejemplo para probar el sistema</p>
+                <h2 className="text-xl font-bold text-white mb-2">{t('testData')}</h2>
+                <p className="text-slate-400 text-sm">{t('insertTestDataDesc')}</p>
               </div>
               <div className="flex gap-3">
                 <button
@@ -192,7 +192,6 @@ export default function DashboardPage() {
                       const res = await fetch('/api/test-data/insert', { method: 'POST' });
                       const data = await res.json();
                       if (res.ok) {
-                        // Guardar en localStorage
                         localStorage.setItem('test_products', JSON.stringify(data.data.products));
                         localStorage.setItem('test_customers', JSON.stringify(data.data.customers));
                         localStorage.setItem('test_orders', JSON.stringify(data.data.orders));
@@ -208,7 +207,7 @@ export default function DashboardPage() {
                   }}
                   className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg hover:shadow-lg transition"
                 >
-                  Insertar datos
+                  {t('insertData')}
                 </button>
                 <button
                   onClick={async () => {
@@ -216,7 +215,6 @@ export default function DashboardPage() {
                       const res = await fetch('/api/test-data/clear', { method: 'POST' });
                       const data = await res.json();
                       if (res.ok) {
-                        // Limpiar localStorage
                         localStorage.removeItem('test_products');
                         localStorage.removeItem('test_customers');
                         localStorage.removeItem('test_orders');
@@ -232,7 +230,7 @@ export default function DashboardPage() {
                   }}
                   className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:shadow-lg transition"
                 >
-                  Eliminar datos
+                  {t('clearData')}
                 </button>
               </div>
             </div>
