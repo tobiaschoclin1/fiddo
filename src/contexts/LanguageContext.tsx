@@ -66,7 +66,38 @@ const translations: Translations = {
 
   // Test data
   insertTestData: { es: "Insertar datos de prueba", en: "Insert test data" },
-  insertTestDataDesc: { es: "Agregar productos, ventas y clientes de ejemplo", en: "Add sample products, sales and customers" },
+  insertTestDataDesc: { es: "Inserta o elimina productos, ventas y clientes de ejemplo para probar el sistema", en: "Insert or remove sample products, sales and customers to test the system" },
+  insertData: { es: "Insertar datos", en: "Insert data" },
+  clearData: { es: "Eliminar datos", en: "Clear data" },
+  testData: { es: "Datos de prueba", en: "Test data" },
+
+  // Filters and sorting
+  filter: { es: "Filtrar", en: "Filter" },
+  sort: { es: "Ordenar", en: "Sort" },
+  search: { es: "Buscar", en: "Search" },
+  all: { es: "Todos", en: "All" },
+  byName: { es: "Por nombre", en: "By name" },
+  byPurchases: { es: "Por compras", en: "By purchases" },
+  bySpent: { es: "Por gastado", en: "By spent" },
+
+  // Customer filters
+  filterByLocation: { es: "Por ubicación", en: "By location" },
+  filterByPurchases: { es: "Por cantidad de compras", en: "By number of purchases" },
+  moreThan5: { es: "Más de 5 compras", en: "More than 5 purchases" },
+  lessThan5: { es: "Menos de 5 compras", en: "Less than 5 purchases" },
+
+  // Messages
+  sendMessage: { es: "Enviar mensaje", en: "Send message" },
+  selectCustomers: { es: "Seleccionar clientes", en: "Select customers" },
+  messageText: { es: "Escribe tu mensaje", en: "Write your message" },
+  send: { es: "Enviar", en: "Send" },
+  messageSent: { es: "Mensaje enviado", en: "Message sent" },
+
+  // Analytics
+  salesOverTime: { es: "Ventas en el tiempo", en: "Sales over time" },
+  topProducts: { es: "Productos más vendidos", en: "Top products" },
+  customerGrowth: { es: "Crecimiento de clientes", en: "Customer growth" },
+  revenueByProduct: { es: "Ingresos por producto", en: "Revenue by product" },
 };
 
 interface LanguageContextType {

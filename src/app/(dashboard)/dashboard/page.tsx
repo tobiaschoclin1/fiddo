@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 import { initiateMLOAuth } from "@/lib/mercadolibre-oauth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Stats {
   totalProducts: number;
@@ -27,6 +28,7 @@ interface UserProfile {
 export default function DashboardPage() {
   const router = useRouter();
   const { notify } = useToast();
+  const { t } = useLanguage();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<Stats>({
     totalProducts: 0,
