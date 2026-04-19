@@ -98,6 +98,26 @@ const translations: Translations = {
   topProducts: { es: "Productos más vendidos", en: "Top products" },
   customerGrowth: { es: "Crecimiento de clientes", en: "Customer growth" },
   revenueByProduct: { es: "Ingresos por producto", en: "Revenue by product" },
+
+  // Error messages
+  errorLoadingProfile: { es: "Error cargando perfil", en: "Error loading profile" },
+  errorLoadingData: { es: "Error cargando datos", en: "Error loading data" },
+  errorInsertingData: { es: "Error insertando datos de prueba", en: "Error inserting test data" },
+  errorDeletingData: { es: "Error eliminando datos de prueba", en: "Error deleting test data" },
+  errorGeneral: { es: "Error insertando datos", en: "Error inserting data" },
+  errorDeletingGeneral: { es: "Error eliminando datos", en: "Error deleting data" },
+
+  // Success messages
+  testDataInserted: { es: "Datos de prueba insertados correctamente", en: "Test data inserted successfully" },
+  testDataDeleted: { es: "Datos de prueba eliminados correctamente", en: "Test data deleted successfully" },
+
+  // Quick actions
+  manageProducts: { es: "Gestionar Productos", en: "Manage Products" },
+  manageProductsDesc: { es: "Ver y editar tu catálogo", en: "View and edit your catalog" },
+  viewCustomers: { es: "Ver Clientes", en: "View Customers" },
+  viewCustomersDesc: { es: "Gestiona tus compradores", en: "Manage your buyers" },
+  createPromotion: { es: "Crear Promoción", en: "Create Promotion" },
+  createPromotionDesc: { es: "Impulsa tus ventas", en: "Boost your sales" },
 };
 
 interface LanguageContextType {

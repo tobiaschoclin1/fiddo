@@ -42,33 +42,39 @@ export default function DashboardPage() {
     async function loadData() {
       try {
         const res = await fetch('/api/user/profile');
-        if (!res.ok) throw new Error('Error cargando perfil');
+        if (!res.ok) throw new Error(t('errorLoadingProfile'));
         const data = await res.json();
         setUserProfile(data);
 
-        // TODO: Cargar stats reales cuando estén disponibles
+        // Load test data from localStorage
+        const testProducts = JSON.parse(localStorage.getItem('test_products') || '[]');
+        const testCustomers = JSON.parse(localStorage.getItem('test_customers') || '[]');
+        const testOrders = JSON.parse(localStorage.getItem('test_orders') || '[]');
+
+        const totalRevenue = testOrders.reduce((sum: number, order: any) => sum + order.total_amount, 0);
+
         setStats({
-          totalProducts: 0,
-          totalCustomers: 0,
-          totalOrders: 0,
-          revenue: 0,
+          totalProducts: testProducts.length,
+          totalCustomers: testCustomers.length,
+          totalOrders: testOrders.length,
+          revenue: totalRevenue,
         });
       } catch (error) {
         console.error('Error:', error);
-        notify('Error cargando datos');
+        notify(t('errorLoadingData'));
       } finally {
         setLoading(false);
       }
     }
     loadData();
-  }, [notify]);
+  }, [notify, t]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-fiddo-orange mx-auto"></div>
-          <p className="mt-4 text-slate-300">Cargando...</p>
+          <p className="mt-4 text-slate-300">{t('loading')}</p>
         </div>
       </div>
     );
@@ -195,14 +201,14 @@ export default function DashboardPage() {
                         localStorage.setItem('test_products', JSON.stringify(data.data.products));
                         localStorage.setItem('test_customers', JSON.stringify(data.data.customers));
                         localStorage.setItem('test_orders', JSON.stringify(data.data.orders));
-                        notify('Datos de prueba insertados correctamente', 'success');
+                        notify(t('testDataInserted'), 'success');
                         window.location.reload();
                       } else {
-                        notify(data.error || 'Error insertando datos', 'error');
+                        notify(data.error || t('errorGeneral'), 'error');
                       }
                     } catch (error) {
                       console.error('Error:', error);
-                      notify('Error insertando datos de prueba', 'error');
+                      notify(t('errorInsertingData'), 'error');
                     }
                   }}
                   className="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg hover:shadow-lg transition"
@@ -218,14 +224,14 @@ export default function DashboardPage() {
                         localStorage.removeItem('test_products');
                         localStorage.removeItem('test_customers');
                         localStorage.removeItem('test_orders');
-                        notify('Datos de prueba eliminados correctamente', 'success');
+                        notify(t('testDataDeleted'), 'success');
                         window.location.reload();
                       } else {
-                        notify(data.error || 'Error eliminando datos', 'error');
+                        notify(data.error || t('errorDeletingGeneral'), 'error');
                       }
                     } catch (error) {
                       console.error('Error:', error);
-                      notify('Error eliminando datos de prueba', 'error');
+                      notify(t('errorDeletingData'), 'error');
                     }
                   }}
                   className="px-6 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:shadow-lg transition"
@@ -249,8 +255,8 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
-              <h3 className="font-bold text-white text-lg">Gestionar Productos</h3>
-              <p className="text-slate-400 text-sm mt-2">Ver y editar tu catálogo</p>
+              <h3 className="font-bold text-white text-lg">{t('manageProducts')}</h3>
+              <p className="text-slate-400 text-sm mt-2">{t('manageProductsDesc')}</p>
             </button>
 
             <button
@@ -262,8 +268,8 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-white text-lg">Ver Clientes</h3>
-              <p className="text-slate-400 text-sm mt-2">Gestiona tus compradores</p>
+              <h3 className="font-bold text-white text-lg">{t('viewCustomers')}</h3>
+              <p className="text-slate-400 text-sm mt-2">{t('viewCustomersDesc')}</p>
             </button>
 
             <button
@@ -275,8 +281,8 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
                 </svg>
               </div>
-              <h3 className="font-bold text-white text-lg">Crear Promoción</h3>
-              <p className="text-slate-400 text-sm mt-2">Impulsa tus ventas</p>
+              <h3 className="font-bold text-white text-lg">{t('createPromotion')}</h3>
+              <p className="text-slate-400 text-sm mt-2">{t('createPromotionDesc')}</p>
             </button>
           </div>
         )}

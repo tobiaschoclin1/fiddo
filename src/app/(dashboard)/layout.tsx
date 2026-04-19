@@ -9,7 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
 
   const handleLogout = async () => {
@@ -38,11 +38,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={`${
-          isSidebarOpen ? 'w-64' : 'w-20'
-        } bg-slate-800/50 backdrop-blur-sm border-r border-slate-700/50 transition-all duration-300 flex flex-col`}
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } ${
+          isSidebarOpen ? 'w-64' : 'lg:w-20 w-64'
+        } fixed lg:static inset-y-0 left-0 z-50 bg-slate-800/50 backdrop-blur-sm border-r border-slate-700/50 transition-all duration-300 flex flex-col`}
       >
         {/* Logo */}
         <div className="p-6 border-b border-slate-700/50">
@@ -61,10 +71,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
-        {/* Toggle button */}
+        {/* Toggle button - Desktop only */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="mx-auto my-2 p-2 rounded-lg hover:bg-slate-700/50 text-slate-400 hover:text-white transition"
+          className="hidden lg:block mx-auto my-2 p-2 rounded-lg hover:bg-slate-700/50 text-slate-400 hover:text-white transition"
         >
           {isSidebarOpen ? '◀' : '▶'}
         </button>
@@ -115,7 +125,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto relative">
+      <main className={`flex-1 overflow-auto relative ${!isSidebarOpen ? 'lg:ml-20' : 'lg:ml-0'}`}>
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="lg:hidden fixed top-6 left-6 z-40 bg-slate-800/70 backdrop-blur-md border border-slate-700/50 rounded-lg p-2 shadow-xl hover:bg-slate-700/70 transition-all"
+        >
+          <svg className="h-6 w-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
         {/* Language Toggle - Fixed Position */}
         <div className="fixed top-6 right-6 z-40">
           <button
