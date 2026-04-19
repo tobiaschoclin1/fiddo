@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { initiateMLOAuth } from "@/lib/mercadolibre-oauth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSearchParams } from "next/navigation";
+
+export const dynamic = 'force-dynamic';
 
 interface UserProfile {
   mercadolibre: {
@@ -18,7 +20,7 @@ interface Customer {
   email?: string;
 }
 
-export default function MensajesPage() {
+function MensajesContent() {
   const { notify } = useToast();
   const { t } = useLanguage();
   const searchParams = useSearchParams();
@@ -213,5 +215,17 @@ export default function MensajesPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MensajesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-slate-900">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-fiddo-orange"></div>
+      </div>
+    }>
+      <MensajesContent />
+    </Suspense>
   );
 }
