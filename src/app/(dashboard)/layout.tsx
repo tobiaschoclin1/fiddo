@@ -37,7 +37,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="flex h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div
@@ -125,19 +125,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 overflow-auto relative ${!isSidebarOpen ? 'lg:ml-20' : 'lg:ml-0'} pb-8`}>
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="lg:hidden fixed top-4 left-4 z-40 bg-slate-800/90 backdrop-blur-md border border-slate-700/50 rounded-lg p-3 shadow-xl hover:bg-slate-700/70 transition-all"
-        >
-          <svg className="h-5 w-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
+      <main className="flex-1 flex flex-col overflow-hidden">
+        {/* Mobile Top Bar */}
+        <div className="lg:hidden flex items-center justify-between bg-slate-800/90 backdrop-blur-md border-b border-slate-700/50 px-4 py-3 z-30">
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="p-2 rounded-lg hover:bg-slate-700/50 transition"
+          >
+            <svg className="h-6 w-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
 
-        {/* Language Toggle - Fixed Position */}
-        <div className="fixed top-4 right-4 z-40">
+          <div className="flex items-center gap-2">
+            <img src="/brand/fiddo_new_logo.png" alt="Fiddo" className="h-8 w-auto" />
+            <h1 className="font-bold text-lg">
+              <span className="text-fiddo-blue">F</span>
+              <span className="text-fiddo-orange">i</span>
+              <span className="text-fiddo-turquoise">ddo</span>
+            </h1>
+          </div>
+
+          <button
+            onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+            className="p-2 rounded-lg hover:bg-slate-700/50 transition"
+            title={language === 'es' ? 'Cambiar a inglés' : 'Switch to Spanish'}
+          >
+            <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Language Toggle - Desktop Only */}
+        <div className="hidden lg:block fixed top-4 right-4 z-40">
           <button
             onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
             className="bg-slate-800/70 backdrop-blur-md border border-slate-700/50 rounded-lg p-2 shadow-xl hover:bg-slate-700/70 transition-all group"
@@ -152,7 +173,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
 
-        <div className="h-full">{children}</div>
+        <div className="flex-1 overflow-auto">{children}</div>
       </main>
     </div>
   );

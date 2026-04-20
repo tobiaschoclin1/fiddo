@@ -51,13 +51,16 @@ export default function DashboardPage() {
         const testCustomers = JSON.parse(localStorage.getItem('test_customers') || '[]');
         const testOrders = JSON.parse(localStorage.getItem('test_orders') || '[]');
 
-        const totalRevenue = testOrders.reduce((sum: number, order: any) => sum + order.total_amount, 0);
+        const totalRevenue = testOrders.reduce((sum: number, order: any) => {
+          const amount = order.total_amount || 0;
+          return sum + amount;
+        }, 0);
 
         setStats({
           totalProducts: testProducts.length,
           totalCustomers: testCustomers.length,
           totalOrders: testOrders.length,
-          revenue: totalRevenue,
+          revenue: totalRevenue || 0,
         });
       } catch (error) {
         console.error('Error:', error);
@@ -147,7 +150,7 @@ export default function DashboardPage() {
           <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-6 rounded-2xl shadow-xl">
             <div>
               <p className="text-purple-200 text-sm font-medium">{t('revenue')}</p>
-              <h3 className="text-4xl font-bold text-white mt-2">${stats.revenue.toLocaleString()}</h3>
+              <h3 className="text-4xl font-bold text-white mt-2">${(stats.revenue || 0).toLocaleString()}</h3>
               <p className="text-purple-200/70 text-xs mt-2">{t('thisMonth')}</p>
             </div>
           </div>

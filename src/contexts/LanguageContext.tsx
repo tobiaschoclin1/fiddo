@@ -98,6 +98,15 @@ const translations: Translations = {
   topProducts: { es: "Productos más vendidos", en: "Top products" },
   customerGrowth: { es: "Crecimiento de clientes", en: "Customer growth" },
   revenueByProduct: { es: "Ingresos por producto", en: "Revenue by product" },
+  viewAnalytics: { es: "Visualiza tus análisis", en: "View your analytics" },
+  salesAndPerformance: { es: "Ventas y rendimiento", en: "Sales and performance" },
+  totalOrders: { es: "Total de pedidos", en: "Total orders" },
+  avgOrderValue: { es: "Valor promedio de orden", en: "Average order value" },
+  perOrder: { es: "Por orden", en: "Per order" },
+  productPerformance: { es: "Rendimiento de productos", en: "Product performance" },
+  productDistribution: { es: "Distribución de productos", en: "Product distribution" },
+  sold: { es: "Vendidos", en: "Sold" },
+  stock: { es: "Stock", en: "Stock" },
 
   // Error messages
   errorLoadingProfile: { es: "Error cargando perfil", en: "Error loading profile" },
