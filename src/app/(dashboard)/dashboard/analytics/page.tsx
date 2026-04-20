@@ -39,6 +39,16 @@ export default function AnalyticsPage() {
           const testOrders = JSON.parse(localStorage.getItem('test_orders') || '[]');
           const testProducts = JSON.parse(localStorage.getItem('test_products') || '[]');
 
+          // Limpiar datos antiguos si usan el formato viejo
+          if (testOrders.length > 0 && testOrders[0].amount !== undefined && testOrders[0].total_amount === undefined) {
+            console.log('Limpiando datos antiguos en analytics...');
+            localStorage.removeItem('test_products');
+            localStorage.removeItem('test_customers');
+            localStorage.removeItem('test_orders');
+            setLoading(false);
+            return;
+          }
+
           // Datos de ventas por día
           const salesByDay = testOrders.reduce((acc: any, order: any) => {
             const date = new Date(order.date).toLocaleDateString('es-AR', { month: 'short', day: 'numeric' });
@@ -93,7 +103,7 @@ export default function AnalyticsPage() {
 
   if (!userProfile?.mercadolibre.connected) {
     return (
-      <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
           <h1 className="text-3xl font-bold text-white">{t('analytics')}</h1>
           <p className="text-slate-400 mt-1">{t('viewAnalytics')}</p>
@@ -120,13 +130,13 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-auto pb-8">
-      <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
+    <div className="min-h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-4 lg:px-8 py-6">
         <h1 className="text-3xl font-bold text-white">{t('analytics')}</h1>
         <p className="text-slate-400 mt-1">{t('salesAndPerformance')}</p>
       </header>
 
-      <div className="p-8 space-y-6">
+      <div className="p-4 lg:p-8 space-y-6 pb-20">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-gradient-to-br from-fiddo-blue to-fiddo-blue-dark p-6 rounded-2xl shadow-xl">

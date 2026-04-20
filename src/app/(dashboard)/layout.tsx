@@ -125,9 +125,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile Top Bar */}
-        <div className="lg:hidden flex items-center justify-between bg-slate-800/90 backdrop-blur-md border-b border-slate-700/50 px-4 py-3 z-30">
+      <main className="flex-1 flex flex-col min-h-0">
+        {/* Mobile Top Bar - Fixed */}
+        <div className="lg:hidden sticky top-0 flex items-center justify-between bg-slate-800/95 backdrop-blur-md border-b border-slate-700/50 px-4 py-3 z-50 shrink-0">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="p-2 rounded-lg hover:bg-slate-700/50 transition"
@@ -173,7 +173,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
 
-        <div className="flex-1 overflow-auto">{children}</div>
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">{children}</div>
       </main>
     </div>
   );

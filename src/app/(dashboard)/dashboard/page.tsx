@@ -51,6 +51,22 @@ export default function DashboardPage() {
         const testCustomers = JSON.parse(localStorage.getItem('test_customers') || '[]');
         const testOrders = JSON.parse(localStorage.getItem('test_orders') || '[]');
 
+        // Limpiar datos antiguos si usan el formato viejo (amount en vez de total_amount)
+        if (testOrders.length > 0 && testOrders[0].amount !== undefined && testOrders[0].total_amount === undefined) {
+          console.log('Limpiando datos antiguos...');
+          localStorage.removeItem('test_products');
+          localStorage.removeItem('test_customers');
+          localStorage.removeItem('test_orders');
+          setStats({
+            totalProducts: 0,
+            totalCustomers: 0,
+            totalOrders: 0,
+            revenue: 0,
+          });
+          setLoading(false);
+          return;
+        }
+
         const totalRevenue = testOrders.reduce((sum: number, order: any) => {
           const amount = order.total_amount || 0;
           return sum + amount;
@@ -86,9 +102,9 @@ export default function DashboardPage() {
   const isConnected = userProfile?.mercadolibre.connected;
 
   return (
-    <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
+      <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-4 lg:px-8 py-6">
         <div>
           <h1 className="text-3xl font-bold text-white">
             {t('welcome')}, {userProfile?.user.name?.split(' ')[0] || 'Usuario'}
@@ -98,7 +114,7 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <div className="p-8 space-y-6">
+      <div className="p-4 lg:p-8 space-y-6 pb-20">
         {/* MercadoLibre Connection Status */}
         {!isConnected && (
           <div className="bg-gradient-to-r from-yellow-600/20 to-yellow-500/20 border border-yellow-500/30 rounded-2xl p-6">

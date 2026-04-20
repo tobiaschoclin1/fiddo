@@ -75,7 +75,7 @@ export default function ProductosPage() {
   // Usuario no conectado a MercadoLibre
   if (!userProfile?.mercadolibre.connected) {
     return (
-      <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
           <h1 className="text-3xl font-bold text-white">{t('productos')}</h1>
           <p className="text-slate-400 mt-1">{t('manageCatalog')}</p>
@@ -104,7 +104,7 @@ export default function ProductosPage() {
   // Usuario conectado pero sin productos
   if (products.length === 0) {
     return (
-      <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
           <h1 className="text-3xl font-bold text-white">{t('productos')}</h1>
           <p className="text-slate-400 mt-1">{t('manageCatalog')}</p>
@@ -126,12 +126,12 @@ export default function ProductosPage() {
 
   // Usuario conectado con productos
   return (
-    <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
+    <div className="min-h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-4 lg:px-8 py-6">
         <h1 className="text-3xl font-bold text-white">{t('productos')}</h1>
         <p className="text-slate-400 mt-1">{products.length} {t('productsInCatalog')}</p>
       </header>
-      <div className="p-8">
+      <div className="p-4 lg:p-8 pb-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {products.map((product) => (
             <div
@@ -139,14 +139,20 @@ export default function ProductosPage() {
               className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6 hover:bg-slate-700/50 transition"
             >
               {product.thumbnail && (
-                <img
-                  src={product.thumbnail}
-                  alt={product.title}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
+                <div className="relative w-full h-48 bg-slate-700/30 rounded-lg mb-4 overflow-hidden">
+                  <img
+                    src={product.thumbnail}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('Error cargando imagen:', product.thumbnail);
+                      e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23334155" width="200" height="200"/%3E%3Ctext fill="%239CA3AF" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3ENo image%3C/text%3E%3C/svg%3E';
+                    }}
+                    onLoad={() => {
+                      console.log('Imagen cargada:', product.thumbnail);
+                    }}
+                  />
+                </div>
               )}
               <h3 className="font-bold text-white text-lg mb-2 line-clamp-2">{product.title}</h3>
               <p className="text-2xl font-bold text-fiddo-orange mb-2">${product.price?.toLocaleString()}</p>
