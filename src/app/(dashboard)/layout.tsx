@@ -125,19 +125,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 overflow-auto relative ${!isSidebarOpen ? 'lg:ml-20' : 'lg:ml-0'}`}>
+      <main className={`flex-1 overflow-auto relative ${!isSidebarOpen ? 'lg:ml-20' : 'lg:ml-0'} pb-8`}>
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="lg:hidden fixed top-6 left-6 z-40 bg-slate-800/70 backdrop-blur-md border border-slate-700/50 rounded-lg p-2 shadow-xl hover:bg-slate-700/70 transition-all"
+          className="lg:hidden fixed top-4 left-4 z-40 bg-slate-800/90 backdrop-blur-md border border-slate-700/50 rounded-lg p-3 shadow-xl hover:bg-slate-700/70 transition-all"
         >
-          <svg className="h-6 w-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="h-5 w-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
 
         {/* Language Toggle - Fixed Position */}
-        <div className="fixed top-6 right-6 z-40">
+        <div className="fixed top-4 right-4 z-40">
           <button
             onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
             className="bg-slate-800/70 backdrop-blur-md border border-slate-700/50 rounded-lg p-2 shadow-xl hover:bg-slate-700/70 transition-all group"

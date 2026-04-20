@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/Toast";
 import { initiateMLOAuth } from "@/lib/mercadolibre-oauth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UserProfile {
   mercadolibre: {
@@ -21,6 +22,7 @@ interface Product {
 
 export default function ProductosPage() {
   const { notify } = useToast();
+  const { t } = useLanguage();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
@@ -29,7 +31,7 @@ export default function ProductosPage() {
     async function loadData() {
       try {
         const res = await fetch('/api/user/profile');
-        if (!res.ok) throw new Error('Error cargando perfil');
+        if (!res.ok) throw new Error(t('errorLoadingProfile'));
         const data = await res.json();
         setUserProfile(data);
 
@@ -54,7 +56,7 @@ export default function ProductosPage() {
         }
       } catch (error) {
         console.error('Error:', error);
-        notify('Error cargando datos');
+        notify(t('errorLoadingData'));
       } finally {
         setLoading(false);
       }
@@ -75,8 +77,8 @@ export default function ProductosPage() {
     return (
       <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
-          <h1 className="text-3xl font-bold text-white">Productos</h1>
-          <p className="text-slate-400 mt-1">Gestiona tu catálogo</p>
+          <h1 className="text-3xl font-bold text-white">{t('productos')}</h1>
+          <p className="text-slate-400 mt-1">{t('manageCatalog')}</p>
         </header>
         <div className="p-8 flex items-center justify-center">
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-12 text-center max-w-2xl">
@@ -85,13 +87,13 @@ export default function ProductosPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-3">Conecta tu cuenta de MercadoLibre</h2>
-            <p className="text-slate-400 mb-6">Para ver y gestionar tus productos, primero debes conectar tu cuenta de MercadoLibre</p>
+            <h2 className="text-2xl font-bold text-white mb-3">{t('connectML')}</h2>
+            <p className="text-slate-400 mb-6">{t('toViewProducts')}</p>
             <button
               onClick={initiateMLOAuth}
               className="px-8 py-3 bg-gradient-to-r from-fiddo-orange to-fiddo-turquoise text-white font-semibold rounded-xl hover:shadow-2xl transition"
             >
-              Conectar MercadoLibre
+              {t('connectMercadoLibre')}
             </button>
           </div>
         </div>
@@ -104,8 +106,8 @@ export default function ProductosPage() {
     return (
       <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
-          <h1 className="text-3xl font-bold text-white">Productos</h1>
-          <p className="text-slate-400 mt-1">Gestiona tu catálogo</p>
+          <h1 className="text-3xl font-bold text-white">{t('productos')}</h1>
+          <p className="text-slate-400 mt-1">{t('manageCatalog')}</p>
         </header>
         <div className="p-8 flex items-center justify-center">
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-12 text-center max-w-2xl">
@@ -114,8 +116,8 @@ export default function ProductosPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-3">Aún no tienes productos</h2>
-            <p className="text-slate-400">Publica tu primer producto en MercadoLibre para verlo aquí</p>
+            <h2 className="text-2xl font-bold text-white mb-3">{t('noProducts')}</h2>
+            <p className="text-slate-400">{t('publishFirstProduct')}</p>
           </div>
         </div>
       </div>
@@ -126,8 +128,8 @@ export default function ProductosPage() {
   return (
     <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
-        <h1 className="text-3xl font-bold text-white">Productos</h1>
-        <p className="text-slate-400 mt-1">{products.length} productos en catálogo</p>
+        <h1 className="text-3xl font-bold text-white">{t('productos')}</h1>
+        <p className="text-slate-400 mt-1">{products.length} {t('productsInCatalog')}</p>
       </header>
       <div className="p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -141,14 +143,17 @@ export default function ProductosPage() {
                   src={product.thumbnail}
                   alt={product.title}
                   className="w-full h-48 object-cover rounded-lg mb-4"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
               )}
               <h3 className="font-bold text-white text-lg mb-2 line-clamp-2">{product.title}</h3>
               <p className="text-2xl font-bold text-fiddo-orange mb-2">${product.price?.toLocaleString()}</p>
               <div className="flex items-center justify-between text-sm text-slate-400">
-                <span>{product.available_quantity} disponibles</span>
+                <span>{product.available_quantity} {t('available')}</span>
                 <span className={product.status === 'active' ? 'text-green-400' : 'text-slate-400'}>
-                  {product.status === 'active' ? 'Activo' : 'Inactivo'}
+                  {product.status === 'active' ? t('active') : t('inactive')}
                 </span>
               </div>
             </div>

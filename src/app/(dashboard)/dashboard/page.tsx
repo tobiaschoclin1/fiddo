@@ -186,12 +186,12 @@ export default function DashboardPage() {
         {/* Test Data - only show if connected */}
         {isConnected && (
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-6">
-            <div className="flex items-start justify-between">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div>
                 <h2 className="text-xl font-bold text-white mb-2">{t('testData')}</h2>
                 <p className="text-slate-400 text-sm">{t('insertTestDataDesc')}</p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={async () => {
                     try {

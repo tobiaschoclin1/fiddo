@@ -134,7 +134,7 @@ export default function ClientesPage() {
       <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
           <h1 className="text-3xl font-bold text-white">{t('clientes')}</h1>
-          <p className="text-slate-400 mt-1">Gestiona tus compradores</p>
+          <p className="text-slate-400 mt-1">{t('manageBuyers')}</p>
         </header>
         <div className="p-8 flex items-center justify-center">
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-12 text-center max-w-2xl">
@@ -162,7 +162,7 @@ export default function ClientesPage() {
       <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
           <h1 className="text-3xl font-bold text-white">{t('clientes')}</h1>
-          <p className="text-slate-400 mt-1">Gestiona tus compradores</p>
+          <p className="text-slate-400 mt-1">{t('manageBuyers')}</p>
         </header>
         <div className="p-8 flex items-center justify-center">
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-12 text-center max-w-2xl">
@@ -172,7 +172,7 @@ export default function ClientesPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">{t('noCustomers')}</h2>
-            <p className="text-slate-400">Cuando realices tu primera venta, tus clientes aparecerán aquí</p>
+            <p className="text-slate-400">{t('whenFirstSale')}</p>
           </div>
         </div>
       </div>
@@ -183,7 +183,7 @@ export default function ClientesPage() {
     <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
         <h1 className="text-3xl font-bold text-white">{t('clientes')}</h1>
-        <p className="text-slate-400 mt-1">{filteredAndSortedCustomers.length} clientes {selectedCustomers.size > 0 && `(${selectedCustomers.size} seleccionados)`}</p>
+        <p className="text-slate-400 mt-1">{filteredAndSortedCustomers.length} {t('customers_')} {selectedCustomers.size > 0 && `(${selectedCustomers.size} ${t('selectedCustomers')})`}</p>
       </header>
 
       <div className="p-8 space-y-6">
@@ -228,8 +228,8 @@ export default function ClientesPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden">
-          <table className="w-full">
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-[600px]">
             <thead className="bg-slate-700/30">
               <tr>
                 <th className="px-6 py-4 text-left">
@@ -240,10 +240,10 @@ export default function ClientesPage() {
                     className="rounded border-slate-500 text-fiddo-orange focus:ring-fiddo-orange"
                   />
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Cliente</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Email</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Compras</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">Total gastado</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">{t('customer_')}</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">{t('email_')}</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">{t('purchases')}</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-slate-300">{t('totalSpent')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700/50">
@@ -262,10 +262,10 @@ export default function ClientesPage() {
                       <div className="h-10 w-10 bg-gradient-to-br from-fiddo-orange to-fiddo-turquoise rounded-full flex items-center justify-center text-white font-bold">
                         {customer.name?.charAt(0).toUpperCase() || '?'}
                       </div>
-                      <div className="font-medium text-white">{customer.name || 'Sin nombre'}</div>
+                      <div className="font-medium text-white">{customer.name || t('noName')}</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-slate-300">{customer.email || 'N/A'}</td>
+                  <td className="px-6 py-4 text-slate-300 max-w-[200px] truncate">{customer.email || 'N/A'}</td>
                   <td className="px-6 py-4 text-slate-300">{customer.orders_count || 0}</td>
                   <td className="px-6 py-4 text-fiddo-orange font-semibold">
                     ${(customer.total_spent || 0).toLocaleString()}

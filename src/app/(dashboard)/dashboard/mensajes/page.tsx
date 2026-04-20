@@ -35,7 +35,7 @@ function MensajesContent() {
     async function loadData() {
       try {
         const res = await fetch('/api/user/profile');
-        if (!res.ok) throw new Error('Error cargando perfil');
+        if (!res.ok) throw new Error(t('errorLoadingProfile'));
         const data = await res.json();
         setUserProfile(data);
 
@@ -53,7 +53,7 @@ function MensajesContent() {
         }
       } catch (error) {
         console.error('Error:', error);
-        notify('Error cargando datos', 'error');
+        notify(t('errorLoadingData'), 'error');
       } finally {
         setLoading(false);
       }
@@ -75,12 +75,12 @@ function MensajesContent() {
 
   const handleSendMessage = async () => {
     if (!message.trim()) {
-      notify('Escribe un mensaje', 'warning');
+      notify(t('writeMessage'), 'warning');
       return;
     }
 
     if (selectedCustomers.size === 0) {
-      notify('Selecciona al menos un cliente', 'warning');
+      notify(t('selectAtLeastOne'), 'warning');
       return;
     }
 
@@ -101,11 +101,11 @@ function MensajesContent() {
         setMessage('');
         setSelectedCustomers(new Set());
       } else {
-        notify(data.error || 'Error enviando mensajes', 'error');
+        notify(data.error || t('errorSendingMessages'), 'error');
       }
     } catch (error) {
       console.error('Error:', error);
-      notify('Error enviando mensajes', 'error');
+      notify(t('errorSendingMessages'), 'error');
     } finally {
       setSending(false);
     }
@@ -124,7 +124,7 @@ function MensajesContent() {
       <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
           <h1 className="text-3xl font-bold text-white">{t('mensajes')}</h1>
-          <p className="text-slate-400 mt-1">Gestiona tus conversaciones</p>
+          <p className="text-slate-400 mt-1">{t('manageConversations')}</p>
         </header>
         <div className="p-8 flex items-center justify-center">
           <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl p-12 text-center max-w-2xl">
@@ -134,7 +134,7 @@ function MensajesContent() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-white mb-3">{t('connectML')}</h2>
-            <p className="text-slate-400 mb-6">Para gestionar tus mensajes, primero debes conectar tu cuenta de MercadoLibre</p>
+            <p className="text-slate-400 mb-6">{t('toManageMessages')}</p>
             <button
               onClick={initiateMLOAuth}
               className="px-8 py-3 bg-gradient-to-r from-fiddo-orange to-fiddo-turquoise text-white font-semibold rounded-xl hover:shadow-2xl transition"
@@ -151,7 +151,7 @@ function MensajesContent() {
     <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <header className="bg-slate-800/30 backdrop-blur-sm border-b border-slate-700/50 px-8 py-6">
         <h1 className="text-3xl font-bold text-white">{t('mensajes')}</h1>
-        <p className="text-slate-400 mt-1">Envía mensajes a tus clientes de MercadoLibre</p>
+        <p className="text-slate-400 mt-1">{t('sendMessagesToCustomers')}</p>
       </header>
 
       <div className="p-8 max-w-6xl mx-auto space-y-6">
@@ -161,7 +161,7 @@ function MensajesContent() {
             <h2 className="text-xl font-bold text-white mb-4">{t('selectCustomers')}</h2>
             <div className="space-y-2 max-h-[500px] overflow-y-auto">
               {customers.length === 0 ? (
-                <p className="text-slate-400 text-center py-8">No hay clientes disponibles</p>
+                <p className="text-slate-400 text-center py-8">{t('noCustomersAvailable')}</p>
               ) : (
                 customers.map((customer) => (
                   <label
@@ -178,7 +178,7 @@ function MensajesContent() {
                       {customer.name?.charAt(0).toUpperCase() || '?'}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-white truncate">{customer.name || 'Sin nombre'}</p>
+                      <p className="font-medium text-white truncate">{customer.name || t('noName')}</p>
                       <p className="text-sm text-slate-400 truncate">{customer.email || 'N/A'}</p>
                     </div>
                   </label>
@@ -187,7 +187,7 @@ function MensajesContent() {
             </div>
             <div className="mt-4 pt-4 border-t border-slate-700/50">
               <p className="text-sm text-slate-400">
-                {selectedCustomers.size} cliente{selectedCustomers.size !== 1 ? 's' : ''} seleccionado{selectedCustomers.size !== 1 ? 's' : ''}
+                {selectedCustomers.size} {selectedCustomers.size === 1 ? t('customer') : t('customers_')} {t('selectedCustomers')}
               </p>
             </div>
           </div>
@@ -198,17 +198,17 @@ function MensajesContent() {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Escribe tu mensaje aquí..."
+              placeholder={t('writeMessageHere')}
               className="w-full h-[400px] px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-fiddo-turquoise resize-none"
             />
             <div className="mt-4 flex items-center justify-between">
-              <p className="text-sm text-slate-400">{message.length} caracteres</p>
+              <p className="text-sm text-slate-400">{message.length} {t('characters')}</p>
               <button
                 onClick={handleSendMessage}
                 disabled={sending || selectedCustomers.size === 0 || !message.trim()}
                 className="px-8 py-3 bg-gradient-to-r from-fiddo-orange to-fiddo-turquoise text-white font-semibold rounded-xl hover:shadow-2xl transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {sending ? 'Enviando...' : `${t('send')} (${selectedCustomers.size})`}
+                {sending ? t('sending') : `${t('send')} (${selectedCustomers.size})`}
               </button>
             </div>
           </div>

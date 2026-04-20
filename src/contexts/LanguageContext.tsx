@@ -118,6 +118,64 @@ const translations: Translations = {
   viewCustomersDesc: { es: "Gestiona tus compradores", en: "Manage your buyers" },
   createPromotion: { es: "Crear Promoción", en: "Create Promotion" },
   createPromotionDesc: { es: "Impulsa tus ventas", en: "Boost your sales" },
+
+  // Messages page
+  manageConversations: { es: "Gestiona tus conversaciones", en: "Manage your conversations" },
+  sendMessagesToCustomers: { es: "Envía mensajes a tus clientes de MercadoLibre", en: "Send messages to your MercadoLibre customers" },
+  toManageMessages: { es: "Para gestionar tus mensajes, primero debes conectar tu cuenta de MercadoLibre", en: "To manage your messages, you must first connect your MercadoLibre account" },
+  noCustomersAvailable: { es: "No hay clientes disponibles", en: "No customers available" },
+  noName: { es: "Sin nombre", en: "No name" },
+  selectedCustomers: { es: "seleccionados", en: "selected" },
+  customer: { es: "cliente", en: "customer" },
+  customers_: { es: "clientes", en: "customers" },
+  writeMessageHere: { es: "Escribe tu mensaje aquí...", en: "Write your message here..." },
+  characters: { es: "caracteres", en: "characters" },
+  sending: { es: "Enviando...", en: "Sending..." },
+  writeMessage: { es: "Escribe un mensaje", en: "Write a message" },
+  selectAtLeastOne: { es: "Selecciona al menos un cliente", en: "Select at least one customer" },
+  errorSendingMessages: { es: "Error enviando mensajes", en: "Error sending messages" },
+
+  // Products page
+  manageCatalog: { es: "Gestiona tu catálogo", en: "Manage your catalog" },
+  toViewProducts: { es: "Para ver y gestionar tus productos, primero debes conectar tu cuenta de MercadoLibre", en: "To view and manage your products, you must first connect your MercadoLibre account" },
+  connectMercadoLibre: { es: "Conectar MercadoLibre", en: "Connect MercadoLibre" },
+  noProductsYet: { es: "Aún no tienes productos", en: "You don't have products yet" },
+  publishFirstProduct: { es: "Publica tu primer producto en MercadoLibre para verlo aquí", en: "Publish your first product on MercadoLibre to see it here" },
+  productsInCatalog: { es: "productos en catálogo", en: "products in catalog" },
+  available: { es: "disponibles", en: "available" },
+  active: { es: "Activo", en: "Active" },
+  inactive: { es: "Inactivo", en: "Inactive" },
+
+  // Customers page
+  manageBuyers: { es: "Gestiona tus compradores", en: "Manage your buyers" },
+  whenFirstSale: { es: "Cuando realices tu primera venta, tus clientes aparecerán aquí", en: "When you make your first sale, your customers will appear here" },
+  customer_: { es: "Cliente", en: "Customer" },
+  email_: { es: "Email", en: "Email" },
+  purchases: { es: "Compras", en: "Purchases" },
+  totalSpent: { es: "Total gastado", en: "Total spent" },
+
+  // Analytics page
+  analyzePerformance: { es: "Analiza tu rendimiento", en: "Analyze your performance" },
+  toViewAnalytics: { es: "Para ver tus análisis de ventas, primero debes conectar tu cuenta de MercadoLibre", en: "To view your sales analytics, you must first connect your MercadoLibre account" },
+  analyzeSalesPerformance: { es: "Analiza tu rendimiento de ventas", en: "Analyze your sales performance" },
+  totalRevenue: { es: "Ingresos totales", en: "Total revenue" },
+  totalSales_: { es: "Total de ventas", en: "Total sales" },
+  averageValue: { es: "Valor promedio", en: "Average value" },
+  vsPreviousMonth: { es: "vs mes anterior", en: "vs previous month" },
+  sales_: { es: "Ventas", en: "Sales" },
+  revenue_: { es: "Ingresos", en: "Revenue" },
+  unitsSold: { es: "Unidades vendidas", en: "Units sold" },
+  noDataAvailable: { es: "No hay datos disponibles", en: "No data available" },
+  customerDistribution: { es: "Distribución de clientes", en: "Customer distribution" },
+  purchasesCount: { es: "compras", en: "purchases" },
+
+  // Month names
+  jan: { es: "Ene", en: "Jan" },
+  feb: { es: "Feb", en: "Feb" },
+  mar: { es: "Mar", en: "Mar" },
+  apr: { es: "Abr", en: "Apr" },
+  may: { es: "May", en: "May" },
+  jun: { es: "Jun", en: "Jun" },
 };
 
 interface LanguageContextType {
