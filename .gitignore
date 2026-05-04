@@ -59,3 +59,4 @@ pnpm-lock.yaml
 
 # keep a line for common files
 .env
+.env*.local

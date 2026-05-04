@@ -8,26 +8,64 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  name      String?
-  password  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  password      String?   // Ahora es opcional para usuarios de OAuth
+  image         String?   // Para foto de perfil de Google
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Relaciones que ya teníamos
   orders    Order[]
   products  Product[]
-
-  // --- LÍNEA FALTANTE AÑADIDA AQUÍ ---
   customers Customer[]
-  // --- FIN DE LA CORRECCIÓN ---
 
   // Campos para la integración con Mercado Libre
   mercadolibreId             String?   @unique
   mercadolibreAccessToken    String?   @db.Text
   mercadolibreRefreshToken   String?   @db.Text
   mercadolibreTokenExpiresAt DateTime?
+
+  // Relaciones para NextAuth
+  accounts Account[]
+  sessions Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model Product {
