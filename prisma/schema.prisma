@@ -119,3 +119,14 @@ model Customer {
   user                User     @relation(fields: [userId], references: [id])
   userId              String
 }
+
+model OAuthState {
+  id           String   @id @default(cuid())
+  state        String   @unique
+  codeVerifier String
+  userId       String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([expiresAt])
+}

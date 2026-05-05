@@ -39,14 +39,21 @@ export async function initiateMLOAuth() {
     const codeVerifier = generateRandomString(128);
     const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-    // 2. Store code verifier in HTTP-only cookie
+    // 2. Store code verifier in sessionStorage (más confiable que cookies para OAuth)
+    sessionStorage.setItem('ml_pkce_verifier', codeVerifier);
+
+    // 3. Generate state parameter for CSRF protection
+    const state = generateRandomString(32);
+    sessionStorage.setItem('ml_oauth_state', state);
+
+    // 4. Store code verifier on server with state as key
     await fetch('/api/auth/mercadolibre/store-verifier', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ codeVerifier }),
+      body: JSON.stringify({ codeVerifier, state }),
     });
 
-    // 3. Build authorization URL
+    // 5. Build authorization URL
     const appId = process.env.NEXT_PUBLIC_MERCADOLIBRE_APP_ID;
     const redirectUri = process.env.NEXT_PUBLIC_MERCADOLIBRE_REDIRECT_URI;
 
@@ -56,8 +63,9 @@ export async function initiateMLOAuth() {
     authUrl.searchParams.append('redirect_uri', redirectUri || '');
     authUrl.searchParams.append('code_challenge', codeChallenge);
     authUrl.searchParams.append('code_challenge_method', 'S256');
+    authUrl.searchParams.append('state', state);
 
-    // 4. Redirect to MercadoLibre authorization page
+    // 6. Redirect to MercadoLibre authorization page
     window.location.href = authUrl.toString();
   } catch (error) {
     console.error('Error initiating MercadoLibre OAuth:', error);

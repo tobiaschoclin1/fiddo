@@ -11,8 +11,8 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
+  const state = searchParams.get('state');
   const cookieStore = await cookies();
-  const codeVerifier = cookieStore.get('pkce_code_verifier')?.value;
   const sessionToken = cookieStore.get('session_token')?.value;
 
   // --- LOG DE DEBUGGING MEJORADO ---
@@ -22,17 +22,12 @@ export async function GET(request: Request) {
   console.log('  - MERCADOLIBRE_REDIRECT_URI:', process.env.MERCADOLIBRE_REDIRECT_URI);
   console.log('  - NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL);
 
-  console.log('🍪 Todas las cookies disponibles:');
-  cookieStore.getAll().forEach(cookie => {
-    console.log(`  ${cookie.name}: ${cookie.value.substring(0, 20)}...`);
-  });
-
   console.log('📝 Verificando parámetros en el callback:', {
     hasCode: !!code,
-    hasCodeVerifier: !!codeVerifier,
+    hasState: !!state,
     hasSessionToken: !!sessionToken,
     codeLength: code?.length,
-    codeVerifierLength: codeVerifier?.length,
+    stateLength: state?.length,
   });
   // --- FIN DEL LOG MEJORADO ---
 
@@ -42,17 +37,52 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingCode`);
   }
 
+  if (!state) {
+    console.error('❌ Falta state parameter');
+    return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingState`);
+  }
+
   if (!sessionToken) {
     console.error('❌ Falta sesión del usuario');
     return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingSession`);
   }
 
-  if (!codeVerifier) {
-    console.error('❌ Falta code verifier PKCE');
-    return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingVerifier`);
-  }
-
   try {
+    console.log('🔄 Verificando state y recuperando code verifier...');
+
+    // Verificar JWT y obtener userId
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    const { payload } = await jwtVerify(sessionToken, secret);
+    const userId = payload.userId as string;
+
+    // Recuperar el code verifier desde la base de datos usando el state
+    const oauthState = await prisma.oAuthState.findUnique({
+      where: { state },
+    });
+
+    if (!oauthState) {
+      console.error('❌ State inválido o expirado');
+      return NextResponse.redirect(`${baseUrl}/dashboard?error=InvalidState`);
+    }
+
+    if (oauthState.userId !== userId) {
+      console.error('❌ State no coincide con el usuario actual');
+      await prisma.oAuthState.delete({ where: { state } });
+      return NextResponse.redirect(`${baseUrl}/dashboard?error=UserMismatch`);
+    }
+
+    if (oauthState.expiresAt < new Date()) {
+      console.error('❌ State expirado');
+      await prisma.oAuthState.delete({ where: { state } });
+      return NextResponse.redirect(`${baseUrl}/dashboard?error=ExpiredState`);
+    }
+
+    const codeVerifier = oauthState.codeVerifier;
+
+    // Eliminar el state usado (one-time use)
+    await prisma.oAuthState.delete({ where: { state } });
+
+    console.log('✅ State verificado, code verifier recuperado');
     console.log('🔄 Intentando obtener token de MercadoLibre...');
 
     const tokenResponse = await fetch('https://api.mercadolibre.com/oauth/token', {
@@ -83,11 +113,10 @@ export async function GET(request: Request) {
     }
 
     const tokens = await tokenResponse.json();
-    console.log('TOKENS DE MERCADO LIBRE RECIBIDOS:', tokens);
-
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(sessionToken, secret);
-    const userId = payload.userId as string;
+    console.log('✅ TOKENS DE MERCADO LIBRE RECIBIDOS:', {
+      user_id: tokens.user_id,
+      expires_in: tokens.expires_in,
+    });
 
     const existingMLUser = await prisma.user.findUnique({
       where: { mercadolibreId: tokens.user_id.toString() },
@@ -113,12 +142,7 @@ export async function GET(request: Request) {
 
     console.log('✅ Tokens de MercadoLibre guardados para el usuario:', userId);
 
-    const response = NextResponse.redirect(`${baseUrl}/dashboard?success=true`);
-    response.cookies.set('pkce_code_verifier', '', {
-      maxAge: 0,
-      path: '/'
-    });
-    return response;
+    return NextResponse.redirect(`${baseUrl}/dashboard?success=true`);
 
   } catch (error) {
     console.error('Error en el callback de Mercado Libre:', error);
