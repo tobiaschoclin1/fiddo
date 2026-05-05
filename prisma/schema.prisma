@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   email         String    @unique
   emailVerified DateTime?
   name          String?
@@ -24,8 +24,8 @@ model User {
 
   // Campos para la integración con Mercado Libre
   mercadolibreId             String?   @unique
-  mercadolibreAccessToken    String?   @db.Text
-  mercadolibreRefreshToken   String?   @db.Text
+  mercadolibreAccessToken    String?
+  mercadolibreRefreshToken   String?
   mercadolibreTokenExpiresAt DateTime?
 
   // Relaciones para NextAuth
@@ -34,17 +34,17 @@ model User {
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -53,14 +53,15 @@ model Account {
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   sessionToken String   @unique
-  userId       String
+  userId       String   @db.ObjectId
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
   identifier String
   token      String   @unique
   expires    DateTime
@@ -69,13 +70,13 @@ model VerificationToken {
 }
 
 model Product {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   cost      Float
   price     Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  userId    String
+  userId    String   @db.ObjectId
   orders    Order[]
   user      User     @relation(fields: [userId], references: [id])
   promotionId       String?   @unique
@@ -84,10 +85,10 @@ model Product {
 }
 
 model Order {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
 
   // Nuevos campos para datos de MELI
-  mercadolibreOrderId BigInt @unique // Usamos BigInt para el ID numérico de la orden de MELI
+  mercadolibreOrderId String @unique // ID numérico de la orden de MELI (como String para MongoDB)
   status      String?
   orderDate   DateTime
 
@@ -95,19 +96,19 @@ model Order {
   createdAt   DateTime @default(now())
 
   product     Product  @relation(fields: [productId], references: [id])
-  productId   String
+  productId   String   @db.ObjectId
 
   user        User     @relation(fields: [userId], references: [id])
-  userId      String
+  userId      String   @db.ObjectId
 
   // Nueva relación con Customer
   customer    Customer @relation(fields: [customerId], references: [id])
-  customerId  String
+  customerId  String   @db.ObjectId
 }
 
 model Customer {
-  id                  String   @id @default(cuid())
-  mercadolibreId      BigInt   @unique // El ID de comprador de Mercado Libre
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  mercadolibreId      String   @unique // El ID de comprador de Mercado Libre (como String para MongoDB)
   nickname            String
   firstName           String?
   lastName            String?
@@ -117,11 +118,11 @@ model Customer {
 
   // Relación para saber a qué vendedor de nuestra app pertenece este cliente
   user                User     @relation(fields: [userId], references: [id])
-  userId              String
+  userId              String   @db.ObjectId
 }
 
 model OAuthState {
-  id           String   @id @default(cuid())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   state        String   @unique
   codeVerifier String
   userId       String

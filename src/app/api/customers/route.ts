@@ -213,10 +213,7 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Convertir el ID a BigInt para que coincida con el esquema
-      const buyerIdBigInt = BigInt(buyer.id);
-
-      // Actualizar estadísticas de compras
+      // Convertir el ID a String para MongoDB
       const buyerIdStr = buyer.id.toString();
       const currentStats = buyerStats.get(buyerIdStr);
       const orderDate = order.date_created;
@@ -302,7 +299,7 @@ export async function GET(request: NextRequest) {
 
       // Usamos `upsert` para crear el cliente si no existe, o actualizarlo si ya existe
       await prisma.customer.upsert({
-        where: { mercadolibreId: buyerIdBigInt },
+        where: { mercadolibreId: buyerIdStr },
         update: {
           nickname: buyer.nickname || 'Usuario sin nombre',
           firstName,
@@ -310,7 +307,7 @@ export async function GET(request: NextRequest) {
           email,
         },
         create: {
-          mercadolibreId: buyerIdBigInt,
+          mercadolibreId: buyerIdStr,
           nickname: buyer.nickname || 'Usuario sin nombre',
           firstName,
           lastName,
