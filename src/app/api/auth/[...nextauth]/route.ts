@@ -1,14 +1,12 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 export const authOptions = {
-  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -59,9 +57,38 @@ export const authOptions = {
     strategy: "jwt" as const,
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // Para Google OAuth, guardar o actualizar el usuario en MongoDB
+      if (account?.provider === "google" && profile?.email) {
+        await prisma.user.upsert({
+          where: { email: profile.email },
+          update: {
+            name: profile.name,
+            image: profile.picture,
+            emailVerified: new Date(),
+          },
+          create: {
+            email: profile.email,
+            name: profile.name,
+            image: profile.picture,
+            emailVerified: new Date(),
+          },
+        });
+      }
+      return true;
+    },
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
+      }
+      // Si es primera vez con Google, buscar el user.id de la DB
+      if (account?.provider === "google" && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+        });
+        if (dbUser) {
+          token.id = dbUser.id;
+        }
       }
       return token;
     },
