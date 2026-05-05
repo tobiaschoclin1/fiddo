@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-export const authOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -42,7 +42,7 @@ export const authOptions = {
 
         return {
           id: user.id,
-          email: user.email,
+          email: user.email!,
           name: user.name,
           image: user.image,
         };
@@ -54,47 +54,58 @@ export const authOptions = {
     error: "/login",
   },
   session: {
-    strategy: "jwt" as const,
+    strategy: "jwt",
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Para Google OAuth, guardar o actualizar el usuario en MongoDB
-      if (account?.provider === "google" && profile?.email) {
-        await prisma.user.upsert({
-          where: { email: profile.email },
-          update: {
-            name: profile.name,
-            image: profile.picture,
-            emailVerified: new Date(),
-          },
-          create: {
-            email: profile.email,
-            name: profile.name,
-            image: profile.picture,
-            emailVerified: new Date(),
-          },
-        });
+      try {
+        // Para Google OAuth, guardar o actualizar el usuario en MongoDB
+        if (account?.provider === "google" && profile?.email) {
+          const googleProfile = profile as any;
+          await prisma.user.upsert({
+            where: { email: profile.email },
+            update: {
+              name: profile.name,
+              image: googleProfile.picture || null,
+              emailVerified: new Date(),
+            },
+            create: {
+              email: profile.email,
+              name: profile.name || null,
+              image: googleProfile.picture || null,
+              emailVerified: new Date(),
+            },
+          });
+        }
+        return true;
+      } catch (error) {
+        console.error("Error in signIn callback:", error);
+        return false;
       }
-      return true;
     },
     async jwt({ token, user, account }) {
-      if (user) {
-        token.id = user.id;
-      }
-      // Si es primera vez con Google, buscar el user.id de la DB
-      if (account?.provider === "google" && token.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: token.email },
-        });
-        if (dbUser) {
-          token.id = dbUser.id;
+      try {
+        if (user) {
+          token.id = user.id;
         }
+        // Si es primera vez con Google, buscar el user.id de la DB
+        if (account?.provider === "google" && token.email) {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: token.email },
+          });
+          if (dbUser) {
+            token.id = dbUser.id;
+          }
+        }
+        return token;
+      } catch (error) {
+        console.error("Error in jwt callback:", error);
+        return token;
       }
-      return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
+      if (session.user && token.id) {
+        (session.user as any).id = token.id as string;
       }
       return session;
     },
