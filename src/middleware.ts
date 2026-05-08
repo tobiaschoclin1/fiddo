@@ -1,32 +1,42 @@
 // src/middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
 
 export async function middleware(request: NextRequest) {
-  // 1. Obtener el token de la cookie
-  const token = request.cookies.get('session_token')?.value;
+  // Verificar si existe alguna cookie de NextAuth
+  const nextAuthSessionToken =
+    request.cookies.get('next-auth.session-token')?.value ||
+    request.cookies.get('__Secure-next-auth.session-token')?.value;
 
-  // 2. Si no hay token, redirigir al login
-  if (!token) {
+  // También aceptar el token personalizado para login manual
+  const customToken = request.cookies.get('session_token')?.value;
+
+  // Si no hay ninguna sesión, redirigir al login
+  if (!nextAuthSessionToken && !customToken) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // 3. Verificar la validez del token
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    await jwtVerify(token, secret);
-
-    // 4. Si el token es válido, permitir que la petición continúe
+  // Si hay sesión de NextAuth, permitir acceso
+  if (nextAuthSessionToken) {
     return NextResponse.next();
-  } catch (error) {
-    console.error('Token inválido:', error);
-    // 5. Si el token es inválido, redirigir al login
-    const response = NextResponse.redirect(new URL('/login', request.url));
-    // Limpiamos la cookie inválida
-    response.cookies.delete('session_token');
-    return response;
   }
+
+  // Si solo hay token personalizado, verificarlo
+  if (customToken) {
+    try {
+      const { jwtVerify } = await import('jose');
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+      await jwtVerify(customToken, secret);
+      return NextResponse.next();
+    } catch (error) {
+      console.error('Token personalizado inválido:', error);
+      const response = NextResponse.redirect(new URL('/login', request.url));
+      response.cookies.delete('session_token');
+      return response;
+    }
+  }
+
+  return NextResponse.redirect(new URL('/login', request.url));
 }
 
 // El "matcher" especifica qué rutas debe proteger este middleware
