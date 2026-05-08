@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
+import { auth } from '@/auth';
 
 export async function GET(request: Request) {
   // Obtener la URL base desde las variables de entorno
@@ -12,8 +9,9 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get('session_token')?.value;
+
+  // Obtener sesión de NextAuth
+  const session = await auth();
 
   // --- LOG DE DEBUGGING MEJORADO ---
   console.log('🔍 CALLBACK MERCADOLIBRE - URL completa:', request.url);
@@ -25,7 +23,7 @@ export async function GET(request: Request) {
   console.log('📝 Verificando parámetros en el callback:', {
     hasCode: !!code,
     hasState: !!state,
-    hasSessionToken: !!sessionToken,
+    hasSession: !!session?.user?.email,
     codeLength: code?.length,
     stateLength: state?.length,
   });
@@ -42,7 +40,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingState`);
   }
 
-  if (!sessionToken) {
+  if (!session?.user?.email) {
     console.error('❌ Falta sesión del usuario');
     return NextResponse.redirect(`${baseUrl}/dashboard?error=MissingSession`);
   }
@@ -50,10 +48,18 @@ export async function GET(request: Request) {
   try {
     console.log('🔄 Verificando state y recuperando code verifier...');
 
-    // Verificar JWT y obtener userId
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(sessionToken, secret);
-    const userId = payload.userId as string;
+    // Buscar usuario por email
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+
+    if (!user) {
+      console.error('❌ Usuario no encontrado');
+      return NextResponse.redirect(`${baseUrl}/dashboard?error=UserNotFound`);
+    }
+
+    const userId = user.id;
 
     // Recuperar el code verifier desde la base de datos usando el state
     const oauthState = await prisma.oAuthState.findUnique({
@@ -147,8 +153,6 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error en el callback de Mercado Libre:', error);
     return NextResponse.redirect(`${baseUrl}/dashboard?error=TokenError`);
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
