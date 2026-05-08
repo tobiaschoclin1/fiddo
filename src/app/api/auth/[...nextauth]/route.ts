@@ -1,10 +1,8 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -57,8 +55,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
+        console.log("[NextAuth] SignIn callback triggered", {
+          provider: account?.provider,
+          email: profile?.email,
+        });
+
         if (account?.provider === "google" && profile?.email) {
-          await prisma.user.upsert({
+          console.log("[NextAuth] Attempting to upsert user:", profile.email);
+
+          const upsertedUser = await prisma.user.upsert({
             where: { email: profile.email },
             update: {
               name: profile.name || null,
@@ -72,11 +77,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               emailVerified: new Date(),
             },
           });
+
+          console.log("[NextAuth] User upserted successfully:", upsertedUser.id);
         }
         return true;
       } catch (error) {
-        console.error("Error in signIn callback:", error);
-        return false;
+        console.error("[NextAuth] Error in signIn callback:", error);
+        console.error("[NextAuth] Error details:", {
+          name: (error as any)?.name,
+          message: (error as any)?.message,
+          code: (error as any)?.code,
+          stack: (error as any)?.stack,
+        });
+        // Retornar true de todas formas para permitir el login
+        // El error se loguea pero no bloquea la autenticación
+        return true;
       }
     },
     async jwt({ token, user, account }) {
