@@ -1,43 +1,42 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import CredentialsProvider from "next-auth/providers/credentials";
+import NextAuth from "next-auth";
+import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
-const authOptions: NextAuthOptions = {
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
-    GoogleProvider({
+    Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    CredentialsProvider({
-      name: "credentials",
+    Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email y contraseña son requeridos");
+          return null;
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: credentials.email as string },
         });
 
         if (!user || !user.password) {
-          throw new Error("Credenciales inválidas");
+          return null;
         }
 
         const isPasswordCorrect = await bcrypt.compare(
-          credentials.password,
+          credentials.password as string,
           user.password
         );
 
         if (!isPasswordCorrect) {
-          throw new Error("Credenciales inválidas");
+          return null;
         }
 
         return {
@@ -51,7 +50,6 @@ const authOptions: NextAuthOptions = {
   ],
   pages: {
     signIn: "/login",
-    error: "/login",
   },
   session: {
     strategy: "jwt",
@@ -59,20 +57,18 @@ const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       try {
-        // Para Google OAuth, guardar o actualizar el usuario en MongoDB
         if (account?.provider === "google" && profile?.email) {
-          const googleProfile = profile as any;
           await prisma.user.upsert({
             where: { email: profile.email },
             update: {
-              name: profile.name,
-              image: googleProfile.picture || null,
+              name: profile.name || null,
+              image: (profile as any).picture || null,
               emailVerified: new Date(),
             },
             create: {
               email: profile.email,
               name: profile.name || null,
-              image: googleProfile.picture || null,
+              image: (profile as any).picture || null,
               emailVerified: new Date(),
             },
           });
@@ -84,24 +80,18 @@ const authOptions: NextAuthOptions = {
       }
     },
     async jwt({ token, user, account }) {
-      try {
-        if (user) {
-          token.id = user.id;
-        }
-        // Si es primera vez con Google, buscar el user.id de la DB
-        if (account?.provider === "google" && token.email) {
-          const dbUser = await prisma.user.findUnique({
-            where: { email: token.email },
-          });
-          if (dbUser) {
-            token.id = dbUser.id;
-          }
-        }
-        return token;
-      } catch (error) {
-        console.error("Error in jwt callback:", error);
-        return token;
+      if (user) {
+        token.id = user.id;
       }
+      if (account?.provider === "google" && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+        });
+        if (dbUser) {
+          token.id = dbUser.id;
+        }
+      }
+      return token;
     },
     async session({ session, token }) {
       if (session.user && token.id) {
@@ -110,9 +100,6 @@ const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
-};
+});
 
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+export const { GET, POST } = handlers;

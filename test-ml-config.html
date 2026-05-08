@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test MercadoLibre Config</title>
+</head>
+<body>
+    <h1>Test MercadoLibre OAuth Config</h1>
+    <button onclick="testConfig()">Test Config</button>
+    <div id="result"></div>
+
+    <script>
+        function testConfig() {
+            const appId = "2754056481994256";
+            const redirectUri = "https://fiddo-app.vercel.app/api/auth/mercadolibre/callback";
+
+            const authUrl = new URL('https://auth.mercadolibre.com.ar/authorization');
+            authUrl.searchParams.append('response_type', 'code');
+            authUrl.searchParams.append('client_id', appId);
+            authUrl.searchParams.append('redirect_uri', redirectUri);
+
+            document.getElementById('result').innerHTML = `
+                <h2>Config:</h2>
+                <p><strong>App ID:</strong> ${appId}</p>
+                <p><strong>Redirect URI:</strong> ${redirectUri}</p>
+                <p><strong>Auth URL:</strong> <a href="${authUrl.toString()}" target="_blank">${authUrl.toString()}</a></p>
+            `;
+
+            console.log('Auth URL:', authUrl.toString());
+        }
+    </script>
+</body>
+</html>
