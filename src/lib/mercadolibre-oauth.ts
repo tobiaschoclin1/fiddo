@@ -47,23 +47,43 @@ export async function initiateMLOAuth() {
     sessionStorage.setItem('ml_oauth_state', state);
 
     // 4. Store code verifier on server with state as key
-    await fetch('/api/auth/mercadolibre/store-verifier', {
+    console.log('📤 Guardando code verifier en el servidor...');
+    const storeResponse = await fetch('/api/auth/mercadolibre/store-verifier', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ codeVerifier, state }),
     });
 
+    if (!storeResponse.ok) {
+      const errorData = await storeResponse.json();
+      console.error('❌ Error guardando code verifier:', errorData);
+      throw new Error(errorData.error || 'Error storing code verifier');
+    }
+
+    console.log('✅ Code verifier guardado exitosamente');
+
     // 5. Build authorization URL
     const appId = process.env.NEXT_PUBLIC_MERCADOLIBRE_APP_ID;
     const redirectUri = process.env.NEXT_PUBLIC_MERCADOLIBRE_REDIRECT_URI;
 
+    console.log('🔧 Variables de entorno:', {
+      appId: appId ? '✅ Definida' : '❌ No definida',
+      redirectUri: redirectUri ? '✅ Definida' : '❌ No definida',
+    });
+
+    if (!appId || !redirectUri) {
+      throw new Error('Faltan variables de entorno de MercadoLibre');
+    }
+
     const authUrl = new URL('https://auth.mercadolibre.com.ar/authorization');
     authUrl.searchParams.append('response_type', 'code');
-    authUrl.searchParams.append('client_id', appId || '');
-    authUrl.searchParams.append('redirect_uri', redirectUri || '');
+    authUrl.searchParams.append('client_id', appId);
+    authUrl.searchParams.append('redirect_uri', redirectUri);
     authUrl.searchParams.append('code_challenge', codeChallenge);
     authUrl.searchParams.append('code_challenge_method', 'S256');
     authUrl.searchParams.append('state', state);
+
+    console.log('🔗 Redirigiendo a MercadoLibre:', authUrl.toString());
 
     // 6. Redirect to MercadoLibre authorization page
     window.location.href = authUrl.toString();
