@@ -86,9 +86,12 @@ export async function initiateMLOAuth() {
     console.log('🔗 Redirigiendo a MercadoLibre:', authUrl.toString());
 
     // 6. Redirect to MercadoLibre authorization page
+    console.log('🚀 Ejecutando window.location.href...');
     window.location.href = authUrl.toString();
+    console.log('⏳ Después de window.location.href (no debería llegar aquí inmediatamente)');
   } catch (error) {
-    console.error('Error initiating MercadoLibre OAuth:', error);
+    console.error('❌ Error initiating MercadoLibre OAuth:', error);
+    alert(`Error conectando a MercadoLibre: ${error instanceof Error ? error.message : 'Error desconocido'}`);
     throw error;
   }
 }
