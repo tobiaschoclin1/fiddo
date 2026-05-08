@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  console.log('[Middleware] Checking auth for:', request.nextUrl.pathname);
+
   // Verificar si existe alguna cookie de NextAuth
   const nextAuthSessionToken =
     request.cookies.get('next-auth.session-token')?.value ||
@@ -11,8 +13,15 @@ export async function middleware(request: NextRequest) {
   // También aceptar el token personalizado para login manual
   const customToken = request.cookies.get('session_token')?.value;
 
+  console.log('[Middleware] Cookies found:', {
+    nextAuth: !!nextAuthSessionToken,
+    custom: !!customToken,
+    allCookies: request.cookies.getAll().map(c => c.name),
+  });
+
   // Si no hay ninguna sesión, redirigir al login
   if (!nextAuthSessionToken && !customToken) {
+    console.log('[Middleware] No session found, redirecting to /login');
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

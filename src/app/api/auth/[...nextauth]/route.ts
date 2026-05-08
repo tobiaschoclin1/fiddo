@@ -59,6 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         console.log("[NextAuth] SignIn callback triggered", {
           provider: account?.provider,
           email: profile?.email,
+          userId: user?.id,
         });
 
         if (account?.provider === "google" && profile?.email) {
