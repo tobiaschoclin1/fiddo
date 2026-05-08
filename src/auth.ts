@@ -1,25 +1,13 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
+import { authConfig } from "./auth.config";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import type { Provider } from "next-auth/providers";
 
+// Extender la configuración base con callbacks que usan Prisma
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  trustHost: true,
-  useSecureCookies: process.env.NODE_ENV === "production",
-  cookies: {
-    sessionToken: {
-      name: process.env.NODE_ENV === "production"
-        ? `__Secure-next-auth.session-token`
-        : `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
-  },
+  ...authConfig,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -34,9 +22,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
-
-        // Importar Prisma solo aquí, no en el nivel superior
-        const { prisma } = await import("@/lib/prisma");
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
@@ -63,14 +48,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         };
       },
     }),
-  ] as Provider[],
-  pages: {
-    signIn: "/login",
-  },
-  session: {
-    strategy: "jwt",
-  },
+  ],
   callbacks: {
+    ...authConfig.callbacks,
     async signIn({ user, account, profile }) {
       try {
         console.log("[NextAuth] SignIn callback triggered", {
@@ -81,9 +61,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (account?.provider === "google" && profile?.email) {
           console.log("[NextAuth] Attempting to upsert user:", profile.email);
-
-          // Importar Prisma solo aquí, no en el nivel superior
-          const { prisma } = await import("@/lib/prisma");
 
           const upsertedUser = await prisma.user.upsert({
             where: { email: profile.email },
@@ -105,14 +82,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return true;
       } catch (error) {
         console.error("[NextAuth] Error in signIn callback:", error);
-        console.error("[NextAuth] Error details:", {
-          name: (error as any)?.name,
-          message: (error as any)?.message,
-          code: (error as any)?.code,
-          stack: (error as any)?.stack,
-        });
-        // Retornar true de todas formas para permitir el login
-        // El error se loguea pero no bloquea la autenticación
         return true;
       }
     },
@@ -121,9 +90,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
       }
       if (account?.provider === "google" && token.email) {
-        // Importar Prisma solo aquí, no en el nivel superior
-        const { prisma } = await import("@/lib/prisma");
-
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email },
         });
