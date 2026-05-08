@@ -1,5 +1,5 @@
 // src/middleware.ts
-import { auth } from "@/app/api/auth/[...nextauth]/route";
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
 export default auth((req) => {
@@ -7,7 +7,6 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   console.log('[Middleware] Path:', pathname, 'Authenticated:', isAuthenticated);
-  console.log('[Middleware] Auth object:', req.auth);
 
   // Proteger rutas del dashboard
   if (pathname.startsWith('/dashboard') && !isAuthenticated) {
