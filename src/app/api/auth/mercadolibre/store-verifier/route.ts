@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose';
-
-const prisma = new PrismaClient();
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
@@ -13,16 +10,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Code verifier and state are required' }, { status: 400 });
     }
 
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
+    // Obtener sesión de NextAuth
+    const session = await auth();
 
-    if (!sessionToken) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(sessionToken, secret);
-    const userId = payload.userId as string;
+    // Buscar usuario por email
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
     // Guardar el code verifier con el state como clave y el userId
     // Expira en 10 minutos
@@ -32,7 +35,7 @@ export async function POST(request: Request) {
       data: {
         state,
         codeVerifier,
-        userId,
+        userId: user.id,
         expiresAt,
       },
     });
@@ -44,7 +47,5 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error storing code verifier:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }
