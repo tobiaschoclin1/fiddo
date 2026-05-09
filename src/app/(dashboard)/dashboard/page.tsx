@@ -124,7 +124,12 @@ export default function DashboardPage() {
                 <p className="text-yellow-100/80">{t('connectMLDesc')}</p>
               </div>
               <button
-                onClick={initiateMLOAuth}
+                type="button"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  await initiateMLOAuth();
+                }}
                 className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-semibold rounded-lg transition shrink-0 ml-4"
               >
                 {t('connectNow')}
@@ -193,7 +198,12 @@ export default function DashboardPage() {
 
             {!isConnected && (
               <button
-                onClick={initiateMLOAuth}
+                type="button"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  await initiateMLOAuth();
+                }}
                 className="px-6 py-2 bg-gradient-to-r from-fiddo-orange to-fiddo-orange-light text-white rounded-lg hover:shadow-lg transition"
               >
                 {t('connect')}

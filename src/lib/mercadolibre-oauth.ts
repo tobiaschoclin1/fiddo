@@ -33,8 +33,9 @@ async function generateCodeChallenge(codeVerifier: string): Promise<string> {
   return base64UrlEncode(hashed);
 }
 
-export async function initiateMLOAuth() {
+export async function initiateMLOAuth(): Promise<void> {
   try {
+    console.log('🎯 Iniciando flujo OAuth de MercadoLibre...');
     // 1. Generate code verifier and challenge
     const codeVerifier = generateRandomString(128);
     const codeChallenge = await generateCodeChallenge(codeVerifier);
@@ -86,9 +87,15 @@ export async function initiateMLOAuth() {
     console.log('🔗 Redirigiendo a MercadoLibre:', authUrl.toString());
 
     // 6. Redirect to MercadoLibre authorization page
-    console.log('🚀 Ejecutando window.location.href...');
-    window.location.href = authUrl.toString();
-    console.log('⏳ Después de window.location.href (no debería llegar aquí inmediatamente)');
+    console.log('🚀 Ejecutando redirección...');
+
+    // Usar setTimeout para asegurar que el fetch se complete
+    // antes de que el navegador cancele requests pendientes
+    setTimeout(() => {
+      window.location.assign(authUrl.toString());
+    }, 100);
+
+    console.log('⏳ Redirección programada');
   } catch (error) {
     console.error('❌ Error initiating MercadoLibre OAuth:', error);
     alert(`Error conectando a MercadoLibre: ${error instanceof Error ? error.message : 'Error desconocido'}`);
