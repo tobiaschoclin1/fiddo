@@ -125,10 +125,10 @@ export default function DashboardPage() {
               </div>
               <button
                 type="button"
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  await initiateMLOAuth();
+                  initiateMLOAuth();
                 }}
                 className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-semibold rounded-lg transition shrink-0 ml-4"
               >
@@ -199,10 +199,10 @@ export default function DashboardPage() {
             {!isConnected && (
               <button
                 type="button"
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  await initiateMLOAuth();
+                  initiateMLOAuth();
                 }}
                 className="px-6 py-2 bg-gradient-to-r from-fiddo-orange to-fiddo-orange-light text-white rounded-lg hover:shadow-lg transition"
               >
