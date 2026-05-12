@@ -1,30 +1,28 @@
 import { NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
+import { auth } from '@/auth';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export async function POST() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('session_token')?.value;
+    const session = await auth();
 
-    if (!token) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
-    const userId = payload.userId as string;
-
-    // Verificar que el usuario está conectado a MercadoLibre
+    // Buscar usuario por email
     const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { mercadolibreAccessToken: true },
+      where: { email: session.user.email },
+      select: { id: true, mercadolibreAccessToken: true },
     });
 
-    if (!user?.mercadolibreAccessToken) {
+    if (!user) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+    }
+
+    if (!user.mercadolibreAccessToken) {
       return NextResponse.json(
         { error: 'Debes conectar tu cuenta de MercadoLibre primero' },
         { status: 400 }

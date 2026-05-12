@@ -124,15 +124,8 @@ export async function GET(request: Request) {
       expires_in: tokens.expires_in,
     });
 
-    const existingMLUser = await prisma.user.findUnique({
-      where: { mercadolibreId: tokens.user_id.toString() },
-      select: { id: true, email: true }
-    });
-
-    if (existingMLUser && existingMLUser.id !== userId) {
-      console.log('⚠️ Esta cuenta de MercadoLibre ya está conectada a otro usuario:', existingMLUser.email);
-      return NextResponse.redirect(`${baseUrl}/dashboard?error=MLAccountAlreadyLinked`);
-    }
+    // Permitir múltiples usuarios de Fiddo conectados a la misma cuenta de MercadoLibre
+    console.log('✅ Múltiples usuarios pueden conectarse a la misma cuenta de MercadoLibre');
 
     const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
 

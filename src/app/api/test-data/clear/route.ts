@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
+import { auth } from '@/auth';
 
 export async function POST() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('session_token')?.value;
+    const session = await auth();
 
-    if (!token) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
-
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    await jwtVerify(token, secret);
 
     // Los datos de prueba están en localStorage del cliente
     // Este endpoint solo confirma que el usuario está autenticado

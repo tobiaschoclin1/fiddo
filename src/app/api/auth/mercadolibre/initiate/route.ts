@@ -87,8 +87,8 @@ export async function GET() {
 
     console.log('🔗 [Server] Redirigiendo a:', authUrl.toString());
 
-    // Redirección desde el servidor
-    return NextResponse.redirect(authUrl.toString());
+    // Redirección desde el servidor con código 307
+    return NextResponse.redirect(authUrl.toString(), 307);
 
   } catch (error) {
     console.error('❌ [Server] Error en initiate:', error);

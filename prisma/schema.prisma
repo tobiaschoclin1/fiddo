@@ -23,7 +23,8 @@ model User {
   customers Customer[]
 
   // Campos para la integración con Mercado Libre
-  mercadolibreId             String?   @unique
+  // Múltiples usuarios pueden conectarse a la misma cuenta de MercadoLibre
+  mercadolibreId             String?
   mercadolibreAccessToken    String?
   mercadolibreRefreshToken   String?
   mercadolibreTokenExpiresAt DateTime?
