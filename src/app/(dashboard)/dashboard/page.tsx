@@ -122,6 +122,9 @@ export default function DashboardPage() {
               <div>
                 <h3 className="text-xl font-bold text-yellow-200 mb-2">{t('connectML')}</h3>
                 <p className="text-yellow-100/80">{t('connectMLDesc')}</p>
+                <p className="text-xs text-yellow-200/60 mt-2">
+                  💡 Para conectar una cuenta específica de MercadoLibre, primero cierra sesión en MercadoLibre en tu navegador
+                </p>
               </div>
               <button
                 type="button"
@@ -191,12 +194,41 @@ export default function DashboardPage() {
                 {isConnected ? (
                   <p className="text-sm text-green-400">{t('connected')} {userProfile.mercadolibre.profile?.nickname}</p>
                 ) : (
-                  <p className="text-sm text-slate-400">{t('notConnected')}</p>
+                  <>
+                    <p className="text-sm text-slate-400">{t('notConnected')}</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      💡 Para conectar una cuenta específica, primero cierra sesión en MercadoLibre en tu navegador
+                    </p>
+                  </>
                 )}
               </div>
             </div>
 
-            {!isConnected && (
+            {isConnected ? (
+              <button
+                type="button"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (confirm('¿Estás seguro de que deseas desconectar tu cuenta de MercadoLibre?')) {
+                    try {
+                      const res = await fetch('/api/auth/mercadolibre/disconnect', { method: 'POST' });
+                      if (res.ok) {
+                        notify('Cuenta de MercadoLibre desconectada', 'success');
+                        window.location.reload();
+                      } else {
+                        notify('Error al desconectar', 'error');
+                      }
+                    } catch {
+                      notify('Error al desconectar', 'error');
+                    }
+                  }
+                }}
+                className="px-6 py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg transition"
+              >
+                Desconectar
+              </button>
+            ) : (
               <button
                 type="button"
                 onClick={(e) => {

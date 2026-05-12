@@ -169,12 +169,17 @@ export default function PerfilPage() {
                 Desconectar
               </button>
             ) : (
-              <button
-                onClick={initiateMLOAuth}
-                className="px-4 py-2 bg-fiddo-orange text-white rounded-lg hover:shadow-lg transition"
-              >
-                Conectar
-              </button>
+              <div className="flex flex-col items-end gap-2">
+                <p className="text-xs text-slate-500 text-right max-w-xs">
+                  💡 Para conectar una cuenta específica, primero cierra sesión en MercadoLibre en tu navegador
+                </p>
+                <button
+                  onClick={initiateMLOAuth}
+                  className="px-4 py-2 bg-fiddo-orange text-white rounded-lg hover:shadow-lg transition"
+                >
+                  Conectar
+                </button>
+              </div>
             )}
           </div>
         </div>
