@@ -1,0 +1,157 @@
+[
+  {
+    "payments": [
+      {
+        "reason": "Tinta",
+        "status_code": null,
+        "total_paid_amount": 1000,
+        "operation_type": "regular_payment",
+        "transaction_amount": 1000,
+        "transaction_amount_refunded": 1000,
+        "date_approved": "2025-08-16T19:32:26.000-04:00",
+        "collector": {
+          "id": 576243586
+        },
+        "coupon_id": null,
+        "installments": 1,
+        "authorization_code": null,
+        "taxes_amount": 0,
+        "id": 122630621354,
+        "date_last_modified": "2025-08-16T19:33:24.000-04:00",
+        "coupon_amount": 0,
+        "available_actions": [
+          ""
+        ],
+        "shipping_cost": 0,
+        "installment_amount": null,
+        "date_created": "2025-08-16T19:32:26.000-04:00",
+        "activation_uri": null,
+        "overpaid_amount": 0,
+        "card_id": null,
+        "status_detail": "refunded",
+        "issuer_id": "2005",
+        "payment_method_id": "account_money",
+        "payment_type": "account_money",
+        "deferred_period": null,
+        "atm_transfer_reference": {
+          "transaction_id": null,
+          "company_id": null
+        },
+        "site_id": "MLA",
+        "payer_id": 765853697,
+        "order_id": 2000012694313576,
+        "currency_id": "ARS",
+        "status": "refunded",
+        "transaction_order_id": null
+      }
+    ],
+    "fulfilled": false,
+    "taxes": {
+      "amount": null,
+      "currency_id": null,
+      "id": null
+    },
+    "order_request": {
+      "change": null,
+      "return": null
+    },
+    "expiration_date": null,
+    "feedback": {
+      "sale": {
+        "date_created": "2025-08-16T19:33:00.000-04:00",
+        "fulfilled": true,
+        "rating": "positive",
+        "id": 9042038594137,
+        "status": "active"
+      },
+      "buyer": null,
+      "seller": {
+        "id": 9042038594137
+      }
+    },
+    "shipping": {
+      "id": null
+    },
+    "date_closed": "2025-08-16T19:32:26.000-04:00",
+    "id": 2000012694313576,
+    "manufacturing_ending_date": null,
+    "order_items": [
+      {
+        "item": {
+          "id": "MLA1515371985",
+          "title": "Tinta",
+          "category_id": "MLA412100",
+          "variation_id": null,
+          "seller_custom_field": null,
+          "global_price": null,
+          "net_weight": null,
+          "variation_attributes": [],
+          "warranty": "Sin garantía",
+          "condition": "used",
+          "seller_sku": null
+        },
+        "quantity": 1,
+        "unit_price": 1000,
+        "gross_price": 0,
+        "currency_id": "ARS",
+        "manufacturing_days": null,
+        "picked_quantity": null,
+        "requested_quantity": {
+          "measure": "unit",
+          "value": 1
+        },
+        "sale_fee": 0,
+        "listing_type_id": "free",
+        "base_exchange_rate": null,
+        "base_currency_id": null,
+        "bundle": null,
+        "element_id": 1
+      }
+    ],
+    "date_last_updated": "2025-08-16T23:33:30+00:00",
+    "last_updated": "2025-08-16T19:33:25.000-04:00",
+    "comment": null,
+    "pack_id": null,
+    "coupon": {
+      "amount": 0,
+      "id": null
+    },
+    "shipping_cost": null,
+    "date_created": "2025-08-16T19:32:26.000-04:00",
+    "date_created_ttl": null,
+    "pickup_id": null,
+    "status_detail": null,
+    "tags": [
+      "no_shipping",
+      "not_delivered",
+      "not_paid"
+    ],
+    "buyer": {
+      "id": 765853697,
+      "nickname": "ALEJOEDELSTEIN"
+    },
+    "seller": {
+      "id": 576243586,
+      "nickname": "CHTO2328443"
+    },
+    "total_amount": 1000,
+    "paid_amount": 0,
+    "currency_id": "ARS",
+    "status": "cancelled",
+    "cancel_detail": {
+      "group": "fraud",
+      "code": "fraud",
+      "description": "A fraud tag cancel the order",
+      "requested_by": "meli",
+      "date": "2025-08-16T19:33:25.000-04:00",
+      "application_id": "7266389415297016"
+    },
+    "context": {
+      "application": null,
+      "product_id": null,
+      "channel": "marketplace",
+      "site": "MLA",
+      "flows": []
+    }
+  }
+]

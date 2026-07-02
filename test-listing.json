@@ -1,0 +1,184 @@
+{
+  "id": "MLA1871442437",
+  "site_id": "MLA",
+  "title": "Test Item - Do Not Offer",
+  "seller_id": 576243586,
+  "category_id": "MLA3530",
+  "user_product_id": "MLAU4193587211",
+  "official_store_id": null,
+  "price": 1000,
+  "base_price": 1000,
+  "original_price": null,
+  "inventory_id": null,
+  "currency_id": "ARS",
+  "initial_quantity": 1,
+  "available_quantity": 1,
+  "sold_quantity": 0,
+  "sale_terms": [],
+  "buying_mode": "buy_it_now",
+  "listing_type_id": "free",
+  "start_time": "2026-07-02T16:47:20.409Z",
+  "stop_time": "2026-08-31T04:00:00.000Z",
+  "end_time": "2026-08-31T04:00:00.000Z",
+  "expiration_time": null,
+  "condition": "new",
+  "permalink": "http://articulo.mercadolibre.com.ar/MLA-1871442437-test-item-do-not-offer-_JM",
+  "pictures": [
+    {
+      "id": "821943-MLA112855638376_072026",
+      "url": "http://http2.mlstatic.com/resources/frontend/statics/processing-image/1.0.0/O-ES.jpg",
+      "secure_url": "https://http2.mlstatic.com/resources/frontend/statics/processing-image/1.0.0/O-ES.jpg",
+      "size": "500x500",
+      "max_size": "500x500",
+      "quality": ""
+    }
+  ],
+  "video_id": null,
+  "descriptions": [],
+  "accepts_mercadopago": true,
+  "non_mercado_pago_payment_methods": [],
+  "shipping": {
+    "mode": "not_specified",
+    "local_pick_up": false,
+    "free_shipping": false,
+    "methods": [],
+    "dimensions": null,
+    "tags": [],
+    "logistic_type": "not_specified",
+    "store_pick_up": false
+  },
+  "international_delivery_mode": "none",
+  "seller_address": {
+    "id": 1147702793,
+    "comment": "Piso 5 Depto 13 Referencia: Piso 5 Depto 13",
+    "address_line": "Avenida Nazca 1492",
+    "zip_code": "1416",
+    "city": {
+      "id": "",
+      "name": "Villa Santa Rita"
+    },
+    "state": {
+      "id": "AR-C",
+      "name": "Capital Federal"
+    },
+    "country": {
+      "id": "AR",
+      "name": "Argentina"
+    },
+    "latitude": -34.6167318,
+    "longitude": -58.4771982,
+    "search_location": {
+      "neighborhood": {
+        "id": "TUxBQlNBTjEyMjNa",
+        "name": "Santa Rita"
+      },
+      "city": {
+        "id": "TUxBQ0NBUGZlZG1sYQ",
+        "name": "Capital Federal"
+      },
+      "state": {
+        "id": "TUxBUENBUGw3M2E1",
+        "name": "Capital Federal"
+      }
+    }
+  },
+  "seller_contact": null,
+  "location": {},
+  "geolocation": {
+    "latitude": -34.6167318,
+    "longitude": -58.4771982
+  },
+  "coverage_areas": [],
+  "attributes": [
+    {
+      "id": "BRAND",
+      "name": "Marca",
+      "value_id": null,
+      "value_name": "Test Brand",
+      "values": [
+        {
+          "id": null,
+          "name": "Test Brand",
+          "struct": null
+        }
+      ],
+      "value_type": "string"
+    },
+    {
+      "id": "MODEL",
+      "name": "Modelo",
+      "value_id": null,
+      "value_name": "Test Model",
+      "values": [
+        {
+          "id": null,
+          "name": "Test Model",
+          "struct": null
+        }
+      ],
+      "value_type": "string"
+    },
+    {
+      "id": "ITEM_CONDITION",
+      "name": "Condición del ítem",
+      "value_id": "2230284",
+      "value_name": "Nuevo",
+      "values": [
+        {
+          "id": "2230284",
+          "name": "Nuevo",
+          "struct": null
+        }
+      ],
+      "value_type": "list"
+    }
+  ],
+  "warnings": [
+    {
+      "department": "shipping",
+      "cause_id": 4053,
+      "code": "shipping.lost_me1_by_user",
+      "message": "User has not mode me1",
+      "references": [
+        "user.shipping_preferences.modes"
+      ]
+    },
+    {
+      "department": "shipping",
+      "cause_id": 4056,
+      "code": "shipping.lost_me2_by_catalog",
+      "message": "Catalog has not mode me2",
+      "references": [
+        "catalog.shipping_preferences.modes"
+      ]
+    }
+  ],
+  "listing_source": "",
+  "variations": [],
+  "thumbnail_id": "821943-MLA112855638376_072026",
+  "thumbnail": "http://http2.mlstatic.com/resources/frontend/statics/processing-image/1.0.0/I-ES.jpg",
+  "status": "paused",
+  "sub_status": [
+    "picture_download_pending"
+  ],
+  "tags": [
+    "good_quality_thumbnail",
+    "immediate_payment"
+  ],
+  "warranty": null,
+  "catalog_product_id": null,
+  "domain_id": "MLA-UNCLASSIFIED_PRODUCTS",
+  "seller_custom_field": null,
+  "parent_item_id": null,
+  "differential_pricing": null,
+  "deal_ids": [],
+  "automatic_relist": false,
+  "date_created": "2026-07-02T16:47:20.649Z",
+  "last_updated": "2026-07-02T16:47:20.649Z",
+  "health": null,
+  "catalog_listing": false,
+  "item_relations": [],
+  "channels": [
+    "marketplace"
+  ]
+}

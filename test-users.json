@@ -1,0 +1,17 @@
+{
+  "seller": {
+    "id": 3483014634,
+    "email": "test_user_4292920612233361423@testuser.com",
+    "nickname": "TESTUSER4292920612233361423",
+    "site_status": "active",
+    "password": "IW7vDFpKBc"
+  },
+  "buyer": {
+    "id": 3511231004,
+    "email": "test_user_7736567319953918170@testuser.com",
+    "nickname": "TESTUSER7736567319953918170",
+    "site_status": "active",
+    "password": "lUcCcr4jEJ"
+  },
+  "createdAt": "2026-07-02T16:35:29.447Z"
+}
