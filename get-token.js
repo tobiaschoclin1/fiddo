@@ -3,7 +3,7 @@
 
 const APP_ID = '2754056481994256';
 const SECRET_KEY = 'oOFpkPM2jczuhbX283m0nVxjVopNfsHn';
-const REDIRECT_URI = 'https://fiddo-app.vercel.app/api/auth/mercadolibre/callback';
+const REDIRECT_URI = 'https://fiddo-app.vercel.app/api/test-auth/callback';
 
 const code = process.argv[2];
 
