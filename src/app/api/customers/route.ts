@@ -1,8 +1,7 @@
 // src/app/api/customers/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
+import { getCurrentUser } from '@/lib/session';
 
 const provinceCodes: Record<string, string> = {
   'AR-C': 'Ciudad Autónoma de Buenos Aires',
@@ -82,14 +81,9 @@ async function getValidAccessToken(userId: string) {
 // --- API PRINCIPAL PARA OBTENER CLIENTES ---
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
-
-    if (!sessionToken) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
-
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(sessionToken, secret);
-    const userId = payload.userId as string;
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
+    const userId = currentUser.id;
 
     const accessToken = await getValidAccessToken(userId);
     const user = await prisma.user.findUnique({ where: { id: userId } });

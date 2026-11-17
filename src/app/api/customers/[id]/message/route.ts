@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
+import { getCurrentUser } from '@/lib/session';
 
 const prisma = new PrismaClient();
 
@@ -50,14 +49,9 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
-
-    if (!sessionToken) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
-
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(sessionToken, secret);
-    const userId = payload.userId as string;
+    const currentUser = await getCurrentUser();
+    if (!currentUser) return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
+    const userId = currentUser.id;
 
     const { message, orderId } = await req.json();
 

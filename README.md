@@ -4,8 +4,8 @@ Aplicación web de gestión de ventas en MercadoLibre. Administra productos, cli
 
 ## 🚀 Deployment
 
-**Plataforma:** Railway  
-**URL:** https://fiddo-app-production.up.railway.app
+**Plataforma:** Render  
+**URL:** https://fiddo-app.onrender.com
 
 ## ✨ Características
 
@@ -21,7 +21,7 @@ Aplicación web de gestión de ventas en MercadoLibre. Administra productos, cli
 - Next.js 15 - Framework React
 - TypeScript - Lenguaje tipado
 - Prisma - ORM
-- PostgreSQL (Neon) - Base de datos
+- MongoDB Atlas - Base de datos (Prisma provider `mongodb`)
 - NextAuth.js - Autenticación
 - Tailwind CSS - Estilos
 
@@ -38,8 +38,8 @@ cp .env.example .env.local
 # Generar Prisma Client
 npx prisma generate
 
-# Ejecutar migraciones
-npx prisma migrate dev
+# Sincronizar el esquema con MongoDB (no usa migrate; MongoDB no lo soporta)
+npx prisma db push
 
 # Iniciar servidor de desarrollo
 npm run dev
@@ -54,15 +54,16 @@ Ver `GOOGLE_OAUTH_SETUP.md` para configurar Google Sign-In y MercadoLibre OAuth.
 ### Variables de Entorno Requeridas
 
 ```env
-DATABASE_URL=postgresql://...
-JWT_SECRET=...
-NEXTAUTH_SECRET=...
-NEXTAUTH_URL=https://tu-url.up.railway.app
+DATABASE_URL=mongodb+srv://...
+AUTH_SECRET=...            # obligatorio: NextAuth no funciona sin esto
+AUTH_TRUST_HOST=true
+NEXTAUTH_URL=https://tu-url.onrender.com
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 MERCADOLIBRE_APP_ID=...
 MERCADOLIBRE_SECRET_KEY=...
-NEXT_PUBLIC_APP_URL=https://tu-url.up.railway.app
+MERCADOLIBRE_REDIRECT_URI=https://tu-url.onrender.com/api/auth/mercadolibre/callback
+NEXT_PUBLIC_APP_URL=https://tu-url.onrender.com
 ```
 
 ## 📋 Comandos Útiles

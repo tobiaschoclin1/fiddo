@@ -5,6 +5,8 @@ import Credentials from "next-auth/providers/credentials";
 // Configuración de NextAuth SIN Prisma (para middleware)
 export const authConfig: NextAuthConfig = {
   trustHost: true,
+  // Sin secret, NextAuth responde con error de configuración (se ve como "error en el servidor").
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,

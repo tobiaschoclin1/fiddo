@@ -1,32 +1,16 @@
 import { NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { getCurrentUser } from '@/lib/session';
+import { getValidAccessToken } from '@/lib/mercadolibre-tokens';
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('session_token')?.value;
+    const user = await getCurrentUser();
 
-    if (!token) {
+    if (!user) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
-    const userId = payload.userId as string;
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        mercadolibreAccessToken: true,
-        mercadolibreId: true,
-      },
-    });
-
-    if (!user?.mercadolibreAccessToken) {
+    if (!user.mercadolibreId || !user.mercadolibreRefreshToken) {
       return NextResponse.json(
         { error: 'No estás conectado a MercadoLibre' },
         { status: 400 }
@@ -42,6 +26,8 @@ export async function POST(request: Request) {
       );
     }
 
+    const accessToken = await getValidAccessToken(user.id);
+
     // Enviar mensaje a cada cliente a través de la API de MercadoLibre
     const results = [];
 
@@ -51,7 +37,7 @@ export async function POST(request: Request) {
         const response = await fetch(`https://api.mercadolibre.com/messages/packs/${customerId}/sellers/${user.mercadolibreId}`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${user.mercadolibreAccessToken}`,
+            'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -69,8 +55,8 @@ export async function POST(request: Request) {
         if (response.ok) {
           results.push({ customerId, success: true });
         } else {
-          const error = await response.json();
-          results.push({ customerId, success: false, error: error.message });
+          const error = await response.json().catch(() => ({}));
+          results.push({ customerId, success: false, error: error.message ?? `HTTP ${response.status}` });
         }
       } catch (error) {
         console.error(`Error enviando mensaje a ${customerId}:`, error);
@@ -89,7 +75,5 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error enviando mensajes:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

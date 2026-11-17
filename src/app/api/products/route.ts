@@ -1,49 +1,32 @@
 // src/app/api/products/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
-
-const prisma = new PrismaClient();
+import { getCurrentUser } from '@/lib/session';
+import { getValidAccessToken } from '@/lib/mercadolibre-tokens';
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('session_token')?.value;
-
-    if (!token) {
+    const user = await getCurrentUser();
+    if (!user) {
       return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
     }
 
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
-    const userId = payload.userId as string;
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        mercadolibreId: true,
-        mercadolibreAccessToken: true,
-      },
-    });
-
-    if (!user?.mercadolibreId || !user.mercadolibreAccessToken) {
+    if (!user.mercadolibreId) {
       return NextResponse.json(
         { message: 'MercadoLibre no está conectado' },
         { status: 400 }
       );
     }
 
-  // Paginación
-  const searchParams = request.nextUrl.searchParams;
-  const limit = parseInt(searchParams.get('limit') || '10', 10);
-  const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const accessToken = await getValidAccessToken(user.id);
+
+    // Paginación
+    const searchParams = request.nextUrl.searchParams;
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
 
     const itemsRes = await fetch(
       `https://api.mercadolibre.com/users/${user.mercadolibreId}/items/search?status=active&offset=${offset}&limit=${limit}`,
-      {
-        headers: { Authorization: `Bearer ${user.mercadolibreAccessToken}` },
-      }
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     if (!itemsRes.ok) {
       return NextResponse.json(
@@ -57,11 +40,10 @@ export async function GET(request: NextRequest) {
     if (ids.length === 0) {
       return NextResponse.json({ items: [], total });
     }
+
     const detailsRes = await fetch(
       `https://api.mercadolibre.com/items?ids=${ids.join(',')}`,
-      {
-        headers: { Authorization: `Bearer ${user.mercadolibreAccessToken}` },
-      }
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     if (!detailsRes.ok) {
       return NextResponse.json(
@@ -90,11 +72,10 @@ export async function GET(request: NextRequest) {
         thumbnail: d.body.thumbnail,
         available_quantity: d.body.available_quantity,
       }));
+
     return NextResponse.json({ items: mapped, total }, { status: 200 });
   } catch (error) {
     console.error('Error al obtener productos:', error);
     return NextResponse.json({ message: 'Error en el servidor' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

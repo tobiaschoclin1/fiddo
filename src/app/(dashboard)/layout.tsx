@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { signOut } from 'next-auth/react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -13,8 +14,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { language, setLanguage, t } = useLanguage();
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await signOut({ redirect: false });
     router.push('/login');
+    router.refresh();
   };
 
   const navItems = [
