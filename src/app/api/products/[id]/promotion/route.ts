@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
+import { getCurrentUser } from '@/lib/session';
 
 const prisma = new PrismaClient();
 
@@ -52,15 +51,11 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const sessionToken = cookieStore.get('session_token')?.value;
-    if (!sessionToken) {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
       return NextResponse.json({ message: 'No autenticado' }, { status: 401 });
     }
-
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(sessionToken, secret);
-    const userId = payload.userId as string;
+    const userId = currentUser.id;
 
     const { discount, expiresAt } = await request.json();
     if (!discount || typeof discount !== 'number' || discount >= 100 || discount <= 0) {
@@ -141,14 +136,14 @@ export async function POST(
     const expirationDate = promoData.finish_date || promoData.finishDate || expiresAt;
 
     await prisma.product.upsert({
-      where: { id },
+      where: { mercadolibreItemId: id },
       update: {
         promotionId,
         promotionExpiresAt: new Date(expirationDate),
         promotionLink: permalink,
       },
       create: {
-        id,
+        mercadolibreItemId: id,
         name: productData?.title ?? '',
         cost: 0,
         price: originalPrice,

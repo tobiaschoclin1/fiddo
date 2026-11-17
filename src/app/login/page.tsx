@@ -21,18 +21,18 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Algo salió mal');
+      if (!result || result.error) {
+        throw new Error('Credenciales inválidas');
       }
 
       router.push('/dashboard');
+      router.refresh();
 
     } catch (error: unknown) {
       console.error('Error al iniciar sesión:', error);

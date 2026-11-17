@@ -83,6 +83,8 @@ model Product {
   promotionId       String?   @unique
   promotionExpiresAt DateTime?
   promotionLink     String?
+  // ID de publicación de Mercado Libre (ej: MLA123456). No es un ObjectId, por eso va en un campo aparte.
+  mercadolibreItemId String?  @unique
 }
 
 model Order {

@@ -33,17 +33,18 @@ export default function RegisterPage() {
         throw new Error(data.message || 'Error al registrarse');
       }
 
-      const loginResponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       });
 
-      if (!loginResponse.ok) {
+      if (!result || result.error) {
         throw new Error('Usuario registrado pero error al iniciar sesión.');
       }
 
       router.push('/dashboard');
+      router.refresh();
 
     } catch (error: unknown) {
       console.error('Error en el registro:', error);
